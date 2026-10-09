@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบพิมพ์ใบ 50 ทวิ (Dot Matrix)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- โหลด Supabase JS SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: 'Sarabun', sans-serif; background-color: #f3f4f6; }
+    </style>
+</head>
+<body class="p-6">
+
+    <div class="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-8">
+        <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b pb-2">ออกใบ 50 ทวิ (Generate PDF)</h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- ส่วนที่ 1: ผู้หักภาษี -->
+            <div class="bg-blue-50 p-4 rounded border border-blue-100">
+                <h3 class="font-bold text-blue-800 mb-3">ผู้มีหน้าที่หักภาษี (บริษัทเรา)</h3>
+                <input type="text" id="payerName" placeholder="ชื่อบริษัท/ห้างหุ้นส่วน" class="w-full mb-2 p-2 border rounded" value="VKT& TRANSPORT LIMITED PARTNERSHIP">
+                <textarea id="payerAddress" placeholder="ที่อยู่" class="w-full mb-2 p-2 border rounded" rows="2">5/12 Moo 15, Khlong Song, Khlong Luang, Pathum Thani 12120</textarea>
+                <input type="text" id="payerTaxId" placeholder="เลขผู้เสียภาษีอากร" class="w-full p-2 border rounded" value="0 1335 54001 05 7">
+            </div>
+
+            <!-- ส่วนที่ 2: ผู้ถูกหักภาษี -->
+            <div class="bg-green-50 p-4 rounded border border-green-100">
+                <h3 class="font-bold text-green-800 mb-3">ผู้ถูกหักภาษี (คนขับรถ/ลานตู้)</h3>
+                <input type="text" id="payeeName" placeholder="ชื่อ-นามสกุล" class="w-full mb-2 p-2 border rounded">
+                <textarea id="payeeAddress" placeholder="ที่อยู่" class="w-full mb-2 p-2 border rounded" rows="2"></textarea>
+                <input type="text" id="payeeIdCard" placeholder="เลขบัตรประชาชน (13 หลัก)" class="w-full p-2 border rounded">
+            </div>
+        </div>
+
+        <!-- ส่วนที่ 3: ตั้งค่าการพิมพ์ -->
+        <div class="mt-6 bg-gray-50 p-4 rounded border border-gray-200 flex items-end gap-4">
+            <div class="flex-1">
+                <label class="block text-sm font-bold text-gray-700 mb-1">เล่มที่ (Book No.)</label>
+                <input type="text" id="bookNo" value="001" class="w-full p-2 border rounded bg-gray-100" readonly>
+            </div>
+            <div class="flex-1">
+                <label class="block text-sm font-bold text-gray-700 mb-1">จำนวนชุดที่ต้องการสร้าง (แผ่น)</label>
+                <input type="number" id="printAmount" value="25" min="1" max="50" class="w-full p-2 border rounded text-lg font-bold text-center text-blue-600">
+            </div>
+            <div class="flex-1">
+                <button id="generateBtn" onclick="processDocument()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded shadow">
+                    🖨️ สร้างไฟล์ PDF
+                </button>
+            </div>
+        </div>
+
+        <!-- แจ้งเตือนสถานะ -->
+        <div id="statusAlert" class="mt-4 hidden p-4 rounded font-bold text-center"></div>
+    </div>
+
+    <script>
+        // 1. ตั้งค่าการเชื่อมต่อ Supabase
+        const SUPABASE_URL = 'https://ymemvhmoyixpdcimihht.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_zWQkU24vBJMAba7ldFQSEg_IcsE_W3B';
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // 2. ตั้งค่า URL ของ Google Apps Script (GAS)
+        const GAS_URL = 'https://script.google.com/macros/s/AKfycbxCGPmMYTHh5wsnBjG0hVl_eHUB5PDF2u-vE0VnuDMJz8vxWmoRMKvY6ckm9JughQJo/exec';
+
+        async function processDocument() {
+            const btn = document.getElementById('generateBtn');
+            const status = document.getElementById('statusAlert');
+            const amount = parseInt(document.getElementById('printAmount').value);
+            const bookNo = document.getElementById('bookNo').value;
+
+            if(!amount || amount < 1) return alert("กรุณาใส่จำนวนชุดที่ถูกต้อง");
+
+            btn.disabled = true;
+            btn.innerHTML = "⏳ กำลังดึงเลข และสร้าง PDF (รอสักครู่)...";
+            status.className = "mt-4 p-4 rounded font-bold text-center bg-yellow-100 text-yellow-800";
+            status.innerHTML = "กำลังดึงเลขล่าสุดจาก Database...";
+            status.classList.remove('hidden');
+
+            try {
+                // 3. ไปเช็กเลขล่าสุดใน Supabase
+                const { data: seqData, error: seqError } = await supabase
+                    .from('document_sequence')
+                    .select('current_sequence')
+                    .eq('book_number', bookNo)
+                    .single();
+
+                if (seqError) throw new Error("ไม่สามารถดึงเลขรันนิ่งจาก Database ได้");
+
+                let currentSeq = seqData.current_sequence;
+                let startNo = currentSeq + 1;
+                let endNo = currentSeq + amount;
+
+                status.innerHTML = `เตรียมสร้างเอกสารเลขที่ ${startNo} ถึง ${endNo} <br>กำลังส่งข้อมูลไปสร้าง PDF...`;
+
+                // 4. เตรียมข้อมูลส่งไปให้ GAS
+                const payload = {
+                    bookNo: bookNo,
+                    startNo: startNo,
+                    endNo: endNo,
+                    payerName: document.getElementById('payerName').value,
+                    payerAddress: document.getElementById('payerAddress').value,
+                    payerTaxId: document.getElementById('payerTaxId').value,
+                    payeeName: document.getElementById('payeeName').value,
+                    payeeAddress: document.getElementById('payeeAddress').value,
+                    payeeIdCard: document.getElementById('payeeIdCard').value
+                };
+
+                // 5. ยิงข้อมูลไปที่ GAS
+                const response = await fetch(GAS_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(payload),
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' } // ป้องกัน Error CORS
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    // 6. ถ้า GAS สร้าง PDF สำเร็จ ให้ไปอัปเดตเลขใน Supabase
+                    const { error: updateError } = await supabase
+                        .from('document_sequence')
+                        .update({ current_sequence: endNo })
+                        .eq('book_number', bookNo);
+                    
+                    if(updateError) console.error("อัปเดต Database ไม่สำเร็จ แต่ PDF สร้างแล้ว");
+
+                    // 7. แสดงปุ่มดาวน์โหลด
+                    status.className = "mt-4 p-4 rounded font-bold text-center bg-green-100 text-green-800";
+                    status.innerHTML = `✅ สร้างสำเร็จ! (เลขที่ ${startNo} - ${endNo}) <br> <a href="${result.url}" target="_blank" class="mt-2 inline-block bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">📥 คลิกเพื่อเปิด/ดาวน์โหลด PDF</a>`;
+                } else {
+                    throw new Error(result.message || "เกิดข้อผิดพลาดจากฝั่ง GAS");
+                }
+
+            } catch (error) {
+                console.error(error);
+                status.className = "mt-4 p-4 rounded font-bold text-center bg-red-100 text-red-800";
+                status.innerHTML = `❌ Error: ${error.message}`;
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = "🖨️ สร้างไฟล์ PDF";
+            }
+        }
+    </script>
+</body>
+</html>
