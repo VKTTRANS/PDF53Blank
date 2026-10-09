@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบพิมพ์ใบ 50 ทวิ (Dot Matrix)</title>
+    <title>ระบบพิมพ์ใบ 50 ทวิ</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
@@ -12,55 +12,61 @@
 </head>
 <body class="p-6">
 
-    <div class="max-w-6xl mx-auto bg-white rounded-lg shadow-md p-8">
-        <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b pb-2">ออกใบ 50 ทวิ (Generate PDF)</h2>
+    <div id="loginSection" class="max-w-sm mx-auto bg-white rounded-lg shadow-md p-8 mt-20">
+        <h2 class="text-2xl font-bold mb-6 text-center">เข้าสู่ระบบ</h2>
+        <input type="text" id="loginUsername" class="w-full mb-4 p-2 border rounded" placeholder="ชื่อผู้ใช้งาน">
+        <input type="password" id="loginPassword" class="w-full mb-6 p-2 border rounded" placeholder="รหัสผ่าน">
+        <button onclick="handleLogin()" id="loginBtn" class="w-full bg-blue-600 text-white font-bold py-2 rounded">เข้าสู่ระบบ</button>
+        <p id="loginError" class="text-red-500 text-sm text-center mt-3 hidden">ข้อมูลไม่ถูกต้อง</p>
+    </div>
+
+    <div id="mainSection" class="max-w-6xl mx-auto bg-white rounded-lg shadow-md p-8 hidden">
+        <div class="flex justify-between items-center border-b pb-4 mb-6">
+            <h2 class="text-2xl font-bold text-gray-800">ออกใบ 50 ทวิ (Generate PDF)</h2>
+            <div class="flex gap-4 items-center">
+                <span id="currentUser" class="text-gray-600 font-bold"></span>
+                <button onclick="handleLogout()" class="bg-red-100 text-red-600 px-4 py-2 rounded font-bold text-sm">ออกจากระบบ</button>
+            </div>
+        </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <!-- ส่วนที่ 1: ผู้หักภาษี (ลูกค้า) -->
             <div class="bg-blue-50 p-4 rounded border border-blue-200">
-                <h3 class="font-bold text-blue-800 mb-3">1. ผู้มีหน้าที่หักภาษี (ลูกค้า)</h3>
-                <input type="text" id="payerName" placeholder="ชื่อลูกค้า/ห้างหุ้นส่วน" class="w-full mb-2 p-2 border rounded">
+                <h3 class="font-bold text-blue-800 mb-3">1. ลูกค้า</h3>
+                <input type="text" id="payerName" placeholder="ชื่อลูกค้า" class="w-full mb-2 p-2 border rounded">
                 <textarea id="payerAddress" placeholder="ที่อยู่ลูกค้า" class="w-full mb-2 p-2 border rounded" rows="2"></textarea>
-                <input type="text" id="payerIdCard" placeholder="เลขบัตรประชาชน (ถ้ามี)" class="w-full mb-2 p-2 border rounded">
-                <input type="text" id="payerTaxId" placeholder="เลขผู้เสียภาษีอากร นิติบุคคล" class="w-full p-2 border rounded">
+                <input type="text" id="payerIdCard" placeholder="เลขบัตรประชาชน" class="w-full mb-2 p-2 border rounded">
+                <input type="text" id="payerTaxId" placeholder="เลขผู้เสียภาษี" class="w-full p-2 border rounded">
             </div>
 
-            <!-- ส่วนที่ 2: กระทำการแทน (บริษัทเรา) -->
             <div class="bg-purple-50 p-4 rounded border border-purple-200">
-                <h3 class="font-bold text-purple-800 mb-3">2. กระทำการแทน (บริษัทเรา)</h3>
+                <h3 class="font-bold text-purple-800 mb-3">2. กระทำการแทน (VKT)</h3>
                 <input type="text" id="agentName" class="w-full mb-2 p-2 border rounded bg-white" value="VKT& TRANSPORT LIMITED PARTNERSHIP">
                 <textarea id="agentAddress" class="w-full mb-2 p-2 border rounded bg-white" rows="2">5/12 Moo 15, Khlong Song, Khlong Luang, Pathum Thani 12120</textarea>
                 <input type="text" id="agentTaxId" class="w-full p-2 border rounded bg-white" value="0 1335 54001 05 7">
-                <p class="text-xs text-purple-600 mt-2">* ข้อมูลนี้ตั้งค่าเริ่มต้นไว้ให้แล้ว สามารถแก้ได้ถ้าจำเป็น</p>
             </div>
 
-            <!-- ส่วนที่ 3: ผู้ถูกหักภาษี (คนขับรถ/ลานตู้) -->
             <div class="bg-green-50 p-4 rounded border border-green-200">
-                <h3 class="font-bold text-green-800 mb-3">3. ผู้ถูกหักภาษี (คนขับ/ลานตู้)</h3>
+                <h3 class="font-bold text-green-800 mb-3">3. ผู้ถูกหัก (คนขับ)</h3>
                 <input type="text" id="payeeName" placeholder="ชื่อ-นามสกุล" class="w-full mb-2 p-2 border rounded">
                 <textarea id="payeeAddress" placeholder="ที่อยู่" class="w-full mb-2 p-2 border rounded" rows="2"></textarea>
                 <input type="text" id="payeeIdCard" placeholder="เลขบัตรประชาชน (13 หลัก)" class="w-full p-2 border rounded">
             </div>
         </div>
 
-        <!-- ส่วนที่ 4: ตั้งค่าการพิมพ์ -->
         <div class="mt-6 bg-gray-50 p-4 rounded border border-gray-200 flex items-end gap-4">
             <div class="flex-1">
-                <label class="block text-sm font-bold text-gray-700 mb-1">เล่มที่ (Book No.)</label>
+                <label class="block text-sm font-bold text-gray-700 mb-1">เล่มที่</label>
                 <input type="text" id="bookNo" value="001" class="w-full p-2 border rounded bg-gray-200" readonly>
             </div>
             <div class="flex-1">
-                <label class="block text-sm font-bold text-gray-700 mb-1">จำนวนชุดที่ต้องการสร้าง</label>
-                <input type="number" id="printAmount" value="25" min="1" max="50" class="w-full p-2 border rounded text-lg font-bold text-center text-blue-600">
+                <label class="block text-sm font-bold text-gray-700 mb-1">จำนวนชุด</label>
+                <input type="number" id="printAmount" value="25" class="w-full p-2 border rounded text-lg font-bold text-center text-blue-600">
             </div>
             <div class="flex-1">
-                <button id="generateBtn" onclick="processDocument()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded shadow">
-                    🖨️ สร้างไฟล์ PDF
-                </button>
+                <button id="generateBtn" onclick="processDocument()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded shadow">สร้างไฟล์ PDF</button>
             </div>
         </div>
 
-        <!-- แจ้งเตือนสถานะ -->
         <div id="statusAlert" class="mt-4 hidden p-4 rounded font-bold text-center"></div>
     </div>
 
@@ -68,38 +74,70 @@
         const SUPABASE_URL = 'https://ymemvhmoyixpdcimihht.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_zWQkU24vBJMAba7ldFQSEg_IcsE_W3B';
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-        // นำ URL ของ GAS Web App ล่าสุดมาใส่ตรงนี้
         const GAS_URL = 'https://script.google.com/macros/s/AKfycbxCGPmMYTHh5wsnBjG0hVl_eHUB5PDF2u-vE0VnuDMJz8vxWmoRMKvY6ckm9JughQJo/exec';
+
+        window.onload = () => {
+            const user = localStorage.getItem('vktUser');
+            if (user) showMain(user);
+        };
+
+        async function handleLogin() {
+            const u = document.getElementById('loginUsername').value;
+            const p = document.getElementById('loginPassword').value;
+            const btn = document.getElementById('loginBtn');
+            const err = document.getElementById('loginError');
+
+            btn.disabled = true;
+            btn.innerHTML = "ตรวจสอบ...";
+            err.classList.add('hidden');
+
+            const { data, error } = await supabase.from('simple_users').select('*').eq('username', u).eq('password', p).single();
+
+            if (data) {
+                localStorage.setItem('vktUser', u);
+                showMain(u);
+            } else {
+                err.classList.remove('hidden');
+            }
+            btn.disabled = false;
+            btn.innerHTML = "เข้าสู่ระบบ";
+        }
+
+        function showMain(username) {
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('mainSection').classList.remove('hidden');
+            document.getElementById('currentUser').innerText = `ผู้ใช้: ${username}`;
+        }
+
+        function handleLogout() {
+            localStorage.removeItem('vktUser');
+            document.getElementById('loginSection').classList.remove('hidden');
+            document.getElementById('mainSection').classList.add('hidden');
+            document.getElementById('loginUsername').value = '';
+            document.getElementById('loginPassword').value = '';
+        }
 
         async function processDocument() {
             const btn = document.getElementById('generateBtn');
             const status = document.getElementById('statusAlert');
             const amount = parseInt(document.getElementById('printAmount').value);
             const bookNo = document.getElementById('bookNo').value;
+            const currentUser = localStorage.getItem('vktUser');
 
-            if(!amount || amount < 1) return alert("กรุณาใส่จำนวนชุดที่ถูกต้อง");
+            if(!amount || amount < 1) return;
 
             btn.disabled = true;
-            btn.innerHTML = "⏳ กำลังดึงเลข และสร้าง PDF (รอสักครู่)...";
             status.className = "mt-4 p-4 rounded font-bold text-center bg-yellow-100 text-yellow-800";
-            status.innerHTML = "กำลังดึงเลขล่าสุดจาก Database...";
+            status.innerHTML = "กำลังดึงเลขล่าสุดและสร้าง PDF...";
             status.classList.remove('hidden');
 
             try {
-                const { data: seqData, error: seqError } = await supabase
-                    .from('document_sequence')
-                    .select('current_sequence')
-                    .eq('book_number', bookNo)
-                    .single();
-
-                if (seqError) throw new Error("ไม่สามารถดึงเลขรันนิ่งจาก Database ได้");
+                const { data: seqData, error: seqError } = await supabase.from('document_sequence').select('current_sequence').eq('book_number', bookNo).single();
+                if (seqError) throw new Error("ไม่สามารถดึงเลขรันนิ่งได้");
 
                 let currentSeq = seqData.current_sequence;
                 let startNo = currentSeq + 1;
                 let endNo = currentSeq + amount;
-
-                status.innerHTML = `เตรียมสร้างเอกสารเลขที่ ${startNo} ถึง ${endNo} <br>กำลังส่งข้อมูลไปสร้าง PDF...`;
 
                 const payload = {
                     bookNo: bookNo,
@@ -109,11 +147,9 @@
                     payerAddress: document.getElementById('payerAddress').value || "-",
                     payerIdCard: document.getElementById('payerIdCard').value || "-",
                     payerTaxId: document.getElementById('payerTaxId').value || "-",
-                    
                     agentName: document.getElementById('agentName').value,
                     agentAddress: document.getElementById('agentAddress').value,
                     agentTaxId: document.getElementById('agentTaxId').value,
-                    
                     payeeName: document.getElementById('payeeName').value || "-",
                     payeeAddress: document.getElementById('payeeAddress').value || "-",
                     payeeIdCard: document.getElementById('payeeIdCard').value || "-",
@@ -125,30 +161,26 @@
                     body: JSON.stringify(payload),
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' } 
                 });
-
                 const result = await response.json();
 
                 if (result.success) {
-                    const { error: updateError } = await supabase
-                        .from('document_sequence')
-                        .update({ current_sequence: endNo })
-                        .eq('book_number', bookNo);
+                    await supabase.from('document_sequence').update({ current_sequence: endNo }).eq('book_number', bookNo);
                     
-                    if(updateError) console.error("อัปเดต Database ไม่สำเร็จ แต่ PDF สร้างแล้ว");
+                    await supabase.from('app_logs').insert([{ 
+                        username: currentUser, 
+                        action_detail: `ออกบิล เล่ม ${bookNo} เลขที่ ${startNo}-${endNo} ให้กับ ${payload.payeeName}` 
+                    }]);
 
                     status.className = "mt-4 p-4 rounded font-bold text-center bg-green-100 text-green-800";
-                    status.innerHTML = `✅ สร้างสำเร็จ! (เลขที่ ${startNo} - ${endNo}) <br> <a href="${result.url}" target="_blank" class="mt-2 inline-block bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">📥 คลิกเพื่อเปิด/ดาวน์โหลด PDF</a>`;
+                    status.innerHTML = `✅ สร้างสำเร็จ! (เลขที่ ${startNo} - ${endNo}) <br> <a href="${result.url}" target="_blank" class="mt-2 inline-block bg-green-600 text-white px-4 py-2 rounded">📥 เปิด PDF</a>`;
                 } else {
-                    throw new Error(result.message || "เกิดข้อผิดพลาดจากฝั่ง GAS");
+                    throw new Error(result.message);
                 }
-
             } catch (error) {
-                console.error(error);
                 status.className = "mt-4 p-4 rounded font-bold text-center bg-red-100 text-red-800";
                 status.innerHTML = `❌ Error: ${error.message}`;
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = "🖨️ สร้างไฟล์ PDF";
             }
         }
     </script>
