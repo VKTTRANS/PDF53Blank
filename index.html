@@ -7,79 +7,151 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { font-family: 'Sarabun', sans-serif; background-color: #f3f4f6; }
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
+        body { 
+            font-family: 'Sarabun', sans-serif; 
+            background: linear-gradient(135deg, #e0e7ff 0%, #ede9fe 100%);
+            min-height: 100vh;
+        }
+        
+        /* Animation สำหรับหน้า Login */
+        @keyframes popIn {
+            0% { opacity: 0; transform: scale(0.95) translateY(10px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .animate-pop-in {
+            animation: popIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        
+        /* Loading Spinner */
+        .spinner {
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top: 3px solid #ffffff;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
-<body class="p-6">
+<body class="p-4 md:p-8 flex items-center justify-center">
 
-    <div id="loginSection" class="max-w-sm mx-auto bg-white rounded-lg shadow-md p-8 mt-20">
-        <h2 class="text-2xl font-bold mb-6 text-center">เข้าสู่ระบบ</h2>
-        <input type="text" id="loginUsername" class="w-full mb-4 p-2 border rounded" placeholder="ชื่อผู้ใช้งาน">
-        <input type="password" id="loginPassword" class="w-full mb-6 p-2 border rounded" placeholder="รหัสผ่าน">
-        <button onclick="handleLogin()" id="loginBtn" class="w-full bg-blue-600 text-white font-bold py-2 rounded">เข้าสู่ระบบ</button>
-        <p id="loginError" class="text-red-500 text-sm text-center mt-3 hidden">ข้อมูลไม่ถูกต้อง</p>
+    <!-- ================= หน้า LOGIN ================= -->
+    <div id="loginSection" class="w-full max-w-sm bg-white/90 backdrop-blur-md rounded-2xl shadow-xl p-8 border border-white animate-pop-in">
+        <div class="text-center mb-8">
+            <div class="bg-blue-600 text-white w-12 h-12 rounded-xl flex items-center justify-center text-2xl mx-auto mb-4 shadow-lg transform rotate-3">
+                🧾
+            </div>
+            <h2 class="text-2xl font-bold text-gray-800">เข้าสู่ระบบ</h2>
+            <p class="text-gray-500 text-sm mt-1">ระบบออกใบ 50 ทวิ VKT</p>
+        </div>
+
+        <div class="space-y-4">
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">ชื่อผู้ใช้งาน</label>
+                <input type="text" id="loginUsername" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all" placeholder="Username" onkeypress="handleEnter(event)">
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">รหัสผ่าน</label>
+                <input type="password" id="loginPassword" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all" placeholder="••••••••" onkeypress="handleEnter(event)">
+            </div>
+            <button onclick="handleLogin()" id="loginBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 flex items-center justify-center">
+                เข้าสู่ระบบ
+            </button>
+            <p id="loginError" class="text-red-500 text-sm text-center bg-red-50 p-2 rounded-lg border border-red-100 hidden">ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง</p>
+        </div>
     </div>
 
-    <div id="mainSection" class="max-w-6xl mx-auto bg-white rounded-lg shadow-md p-8 hidden">
-        <div class="flex justify-between items-center border-b pb-4 mb-6">
-            <h2 class="text-2xl font-bold text-gray-800">ออกใบ 50 ทวิ (Generate PDF)</h2>
-            <div class="flex gap-4 items-center">
-                <span id="currentUser" class="text-gray-600 font-bold"></span>
-                <button onclick="handleLogout()" class="bg-red-100 text-red-600 px-4 py-2 rounded font-bold text-sm">ออกจากระบบ</button>
+    <!-- ================= หน้า DASHBOARD ================= -->
+    <div id="mainSection" class="w-full max-w-6xl mx-auto bg-white rounded-2xl shadow-xl p-6 md:p-8 hidden animate-pop-in">
+        <div class="flex flex-col md:flex-row justify-between items-center border-b pb-4 mb-6 gap-4">
+            <div class="flex items-center gap-3">
+                <span class="text-3xl">🖨️</span>
+                <h2 class="text-2xl font-bold text-gray-800">ออกใบ 50 ทวิ (Dot Matrix)</h2>
+            </div>
+            <div class="flex gap-4 items-center bg-gray-50 px-4 py-2 rounded-full border border-gray-100">
+                <span id="currentUser" class="text-gray-600 font-semibold text-sm"></span>
+                <div class="w-px h-4 bg-gray-300"></div>
+                <button onclick="handleLogout()" class="text-red-500 hover:text-red-700 font-bold text-sm transition-colors">ออกจากระบบ</button>
             </div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="bg-blue-50 p-4 rounded border border-blue-200">
-                <h3 class="font-bold text-blue-800 mb-3">1. ลูกค้า</h3>
-                <input type="text" id="payerName" placeholder="ชื่อลูกค้า" class="w-full mb-2 p-2 border rounded">
-                <textarea id="payerAddress" placeholder="ที่อยู่ลูกค้า" class="w-full mb-2 p-2 border rounded" rows="2"></textarea>
-                <input type="text" id="payerIdCard" placeholder="เลขบัตรประชาชน" class="w-full mb-2 p-2 border rounded">
-                <input type="text" id="payerTaxId" placeholder="เลขผู้เสียภาษี" class="w-full p-2 border rounded">
+            <div class="bg-blue-50/50 p-5 rounded-xl border border-blue-100 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-1 h-full bg-blue-400"></div>
+                <h3 class="font-bold text-blue-800 mb-4 flex items-center gap-2"><span>1.</span> ลูกค้า (ผู้มีหน้าที่หัก)</h3>
+                <input type="text" id="payerName" placeholder="ชื่อลูกค้า" class="w-full mb-3 p-2.5 border border-gray-200 rounded-lg text-sm focus:ring-1 focus:ring-blue-400 focus:outline-none">
+                <textarea id="payerAddress" placeholder="ที่อยู่ลูกค้า" class="w-full mb-3 p-2.5 border border-gray-200 rounded-lg text-sm focus:ring-1 focus:ring-blue-400 focus:outline-none" rows="2"></textarea>
+                <input type="text" id="payerIdCard" placeholder="เลขบัตรประชาชน" class="w-full mb-3 p-2.5 border border-gray-200 rounded-lg text-sm focus:ring-1 focus:ring-blue-400 focus:outline-none">
+                <input type="text" id="payerTaxId" placeholder="เลขผู้เสียภาษีอากร" class="w-full p-2.5 border border-gray-200 rounded-lg text-sm focus:ring-1 focus:ring-blue-400 focus:outline-none">
             </div>
 
-            <div class="bg-purple-50 p-4 rounded border border-purple-200">
-                <h3 class="font-bold text-purple-800 mb-3">2. กระทำการแทน (VKT)</h3>
-                <input type="text" id="agentName" class="w-full mb-2 p-2 border rounded bg-white" value="VKT& TRANSPORT LIMITED PARTNERSHIP">
-                <textarea id="agentAddress" class="w-full mb-2 p-2 border rounded bg-white" rows="2">5/12 Moo 15, Khlong Song, Khlong Luang, Pathum Thani 12120</textarea>
-                <input type="text" id="agentTaxId" class="w-full p-2 border rounded bg-white" value="0 1335 54001 05 7">
+            <div class="bg-purple-50/50 p-5 rounded-xl border border-purple-100 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-1 h-full bg-purple-400"></div>
+                <h3 class="font-bold text-purple-800 mb-4 flex items-center gap-2"><span>2.</span> กระทำการแทน (VKT)</h3>
+                <input type="text" id="agentName" class="w-full mb-3 p-2.5 border border-gray-200 rounded-lg text-sm bg-white" value="VKT& TRANSPORT LIMITED PARTNERSHIP">
+                <textarea id="agentAddress" class="w-full mb-3 p-2.5 border border-gray-200 rounded-lg text-sm bg-white" rows="2">5/12 Moo 15, Khlong Song, Khlong Luang, Pathum Thani 12120</textarea>
+                <input type="text" id="agentTaxId" class="w-full p-2.5 border border-gray-200 rounded-lg text-sm bg-white" value="0 1335 54001 05 7">
             </div>
 
-            <div class="bg-green-50 p-4 rounded border border-green-200">
-                <h3 class="font-bold text-green-800 mb-3">3. ผู้ถูกหัก (คนขับ)</h3>
-                <input type="text" id="payeeName" placeholder="ชื่อ-นามสกุล" class="w-full mb-2 p-2 border rounded">
-                <textarea id="payeeAddress" placeholder="ที่อยู่" class="w-full mb-2 p-2 border rounded" rows="2"></textarea>
-                <input type="text" id="payeeIdCard" placeholder="เลขบัตรประชาชน (13 หลัก)" class="w-full p-2 border rounded">
+            <div class="bg-green-50/50 p-5 rounded-xl border border-green-100 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-1 h-full bg-green-400"></div>
+                <h3 class="font-bold text-green-800 mb-4 flex items-center gap-2"><span>3.</span> ผู้ถูกหัก (คนขับรถ/ลาน)</h3>
+                <input type="text" id="payeeName" placeholder="ชื่อ-นามสกุล" class="w-full mb-3 p-2.5 border border-gray-200 rounded-lg text-sm focus:ring-1 focus:ring-green-400 focus:outline-none">
+                <textarea id="payeeAddress" placeholder="ที่อยู่" class="w-full mb-3 p-2.5 border border-gray-200 rounded-lg text-sm focus:ring-1 focus:ring-green-400 focus:outline-none" rows="2"></textarea>
+                <input type="text" id="payeeIdCard" placeholder="เลขบัตรประชาชน (13 หลัก)" class="w-full p-2.5 border border-gray-200 rounded-lg text-sm focus:ring-1 focus:ring-green-400 focus:outline-none">
             </div>
         </div>
 
-        <div class="mt-6 bg-gray-50 p-4 rounded border border-gray-200 flex items-end gap-4">
-            <div class="flex-1">
-                <label class="block text-sm font-bold text-gray-700 mb-1">เล่มที่</label>
-                <input type="text" id="bookNo" value="001" class="w-full p-2 border rounded bg-gray-200" readonly>
+        <div class="mt-8 bg-gray-50 p-5 rounded-xl border border-gray-200 flex flex-col md:flex-row items-end gap-5">
+            <div class="w-full md:w-1/4">
+                <label class="block text-sm font-bold text-gray-700 mb-1.5">เล่มที่ (อ้างอิงล่าสุด)</label>
+                <input type="text" id="bookNo" value="001" class="w-full p-3 border border-gray-300 rounded-lg bg-gray-200 text-gray-600 font-mono" readonly>
             </div>
-            <div class="flex-1">
-                <label class="block text-sm font-bold text-gray-700 mb-1">จำนวนชุด</label>
-                <input type="number" id="printAmount" value="25" class="w-full p-2 border rounded text-lg font-bold text-center text-blue-600">
+            <div class="w-full md:w-1/4">
+                <label class="block text-sm font-bold text-gray-700 mb-1.5">จำนวนชุดที่ต้องการ</label>
+                <input type="number" id="printAmount" value="25" min="1" max="100" class="w-full p-3 border border-gray-300 rounded-lg text-xl font-bold text-center text-blue-600 focus:ring-2 focus:ring-blue-500 focus:outline-none">
             </div>
-            <div class="flex-1">
-                <button id="generateBtn" onclick="processDocument()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded shadow">สร้างไฟล์ PDF</button>
+            <div class="w-full md:w-2/4">
+                <button id="generateBtn" onclick="processDocument()" class="w-full bg-gray-900 hover:bg-black text-white font-bold py-3.5 px-4 rounded-lg shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                    สร้างไฟล์ PDF
+                </button>
             </div>
         </div>
 
-        <div id="statusAlert" class="mt-4 hidden p-4 rounded font-bold text-center"></div>
+        <div id="statusAlert" class="mt-6 hidden p-4 rounded-lg font-bold text-center border"></div>
     </div>
 
     <script>
+        // ประกาศตัวแปรเชื่อมต่อแค่รอบเดียวเท่านั้น
         const SUPABASE_URL = 'https://ymemvhmoyixpdcimihht.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_zWQkU24vBJMAba7ldFQSEg_IcsE_W3B';
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         const GAS_URL = 'https://script.google.com/macros/s/AKfycbxCGPmMYTHh5wsnBjG0hVl_eHUB5PDF2u-vE0VnuDMJz8vxWmoRMKvY6ckm9JughQJo/exec';
 
+        // เช็กสถานะการล็อกอินตอนโหลดหน้า
         window.onload = () => {
+            document.body.classList.remove('items-center', 'justify-center'); // เคลียร์คลาสตอนโหลดเพื่อจัด layout
             const user = localStorage.getItem('vktUser');
-            if (user) showMain(user);
+            if (user) {
+                showMain(user);
+            } else {
+                document.body.classList.add('items-center', 'justify-center');
+                document.getElementById('loginSection').classList.remove('hidden');
+            }
         };
+
+        // ฟังก์ชันรับการกด Enter
+        function handleEnter(event) {
+            if (event.key === 'Enter') {
+                handleLogin();
+            }
+        }
 
         async function handleLogin() {
             const u = document.getElementById('loginUsername').value;
@@ -87,30 +159,39 @@
             const btn = document.getElementById('loginBtn');
             const err = document.getElementById('loginError');
 
+            if(!u || !p) return;
+
             btn.disabled = true;
-            btn.innerHTML = "ตรวจสอบ...";
+            btn.innerHTML = `<span class="spinner"></span> ตรวจสอบ...`;
             err.classList.add('hidden');
 
-            const { data, error } = await supabase.from('simple_users').select('*').eq('username', u).eq('password', p).single();
+            try {
+                const { data, error } = await supabase.from('simple_users').select('*').eq('username', u).eq('password', p).single();
 
-            if (data) {
-                localStorage.setItem('vktUser', u);
-                showMain(u);
-            } else {
+                if (data) {
+                    localStorage.setItem('vktUser', u);
+                    showMain(u);
+                } else {
+                    err.classList.remove('hidden');
+                }
+            } catch (e) {
                 err.classList.remove('hidden');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = "เข้าสู่ระบบ";
             }
-            btn.disabled = false;
-            btn.innerHTML = "เข้าสู่ระบบ";
         }
 
         function showMain(username) {
+            document.body.classList.remove('items-center', 'justify-center');
             document.getElementById('loginSection').classList.add('hidden');
             document.getElementById('mainSection').classList.remove('hidden');
-            document.getElementById('currentUser').innerText = `ผู้ใช้: ${username}`;
+            document.getElementById('currentUser').innerText = `👤 ${username}`;
         }
 
         function handleLogout() {
             localStorage.removeItem('vktUser');
+            document.body.classList.add('items-center', 'justify-center');
             document.getElementById('loginSection').classList.remove('hidden');
             document.getElementById('mainSection').classList.add('hidden');
             document.getElementById('loginUsername').value = '';
@@ -127,13 +208,14 @@
             if(!amount || amount < 1) return;
 
             btn.disabled = true;
-            status.className = "mt-4 p-4 rounded font-bold text-center bg-yellow-100 text-yellow-800";
-            status.innerHTML = "กำลังดึงเลขล่าสุดและสร้าง PDF...";
+            btn.innerHTML = `<span class="spinner" style="border-top-color:#111827;"></span> กำลังประมวลผล...`;
+            status.className = "mt-6 p-4 rounded-lg font-bold text-center bg-blue-50 text-blue-800 border-blue-200";
+            status.innerHTML = "กำลังเตรียมเอกสาร กรุณารอสักครู่...";
             status.classList.remove('hidden');
 
             try {
                 const { data: seqData, error: seqError } = await supabase.from('document_sequence').select('current_sequence').eq('book_number', bookNo).single();
-                if (seqError) throw new Error("ไม่สามารถดึงเลขรันนิ่งได้");
+                if (seqError) throw new Error("ไม่พบข้อมูลเล่มที่นี้ในระบบ Database");
 
                 let currentSeq = seqData.current_sequence;
                 let startNo = currentSeq + 1;
@@ -171,16 +253,26 @@
                         action_detail: `ออกบิล เล่ม ${bookNo} เลขที่ ${startNo}-${endNo} ให้กับ ${payload.payeeName}` 
                     }]);
 
-                    status.className = "mt-4 p-4 rounded font-bold text-center bg-green-100 text-green-800";
-                    status.innerHTML = `✅ สร้างสำเร็จ! (เลขที่ ${startNo} - ${endNo}) <br> <a href="${result.url}" target="_blank" class="mt-2 inline-block bg-green-600 text-white px-4 py-2 rounded">📥 เปิด PDF</a>`;
+                    status.className = "mt-6 p-5 rounded-lg font-bold text-center bg-green-50 text-green-800 border-green-200 shadow-inner";
+                    status.innerHTML = `
+                        <div class="text-xl mb-2">✅ สร้างเอกสารสำเร็จ!</div>
+                        <div class="text-sm font-normal mb-4 text-green-700">เลขที่บิล: ${startNo} ถึง ${endNo}</div>
+                        <a href="${result.url}" target="_blank" class="inline-flex items-center gap-2 bg-green-600 text-white px-6 py-2.5 rounded-lg hover:bg-green-700 transition-colors shadow-md">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                            คลิกเพื่อเปิด / ดาวน์โหลด PDF
+                        </a>`;
                 } else {
                     throw new Error(result.message);
                 }
             } catch (error) {
-                status.className = "mt-4 p-4 rounded font-bold text-center bg-red-100 text-red-800";
-                status.innerHTML = `❌ Error: ${error.message}`;
+                status.className = "mt-6 p-4 rounded-lg font-bold text-center bg-red-50 text-red-800 border-red-200";
+                status.innerHTML = `❌ เกิดข้อผิดพลาด: ${error.message}`;
             } finally {
                 btn.disabled = false;
+                btn.innerHTML = `
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                    สร้างไฟล์ PDF
+                `;
             }
         }
     </script>
