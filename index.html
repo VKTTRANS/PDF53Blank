@@ -6,6 +6,7 @@
     <title>ระบบพิมพ์ใบ 50 ทวิ</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
         body { 
@@ -13,43 +14,42 @@
             background: linear-gradient(135deg, #e0e7ff 0%, #ede9fe 100%);
             min-height: 100vh;
         }
-        
-        /* Animation สำหรับหน้า Login */
         @keyframes popIn {
             0% { opacity: 0; transform: scale(0.95) translateY(10px); }
             100% { opacity: 1; transform: scale(1) translateY(0); }
         }
-        .animate-pop-in {
-            animation: popIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-        
-        /* Loading Spinner */
+        .animate-pop-in { animation: popIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         .spinner {
             border: 3px solid rgba(255,255,255,0.3);
             border-radius: 50%;
             border-top: 3px solid #ffffff;
-            width: 20px;
-            height: 20px;
+            width: 20px; height: 20px;
             animation: spin 1s linear infinite;
-            display: inline-block;
-            vertical-align: middle;
-            margin-right: 8px;
+            display: inline-block; vertical-align: middle; margin-right: 8px;
         }
+        .spinner-dark { border: 3px solid rgba(0,0,0,0.1); border-top: 3px solid #111827; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        select { scrollbar-width: thin; }
+        .swal2-title, .swal2-html-container { font-family: 'Sarabun', sans-serif !important; }
+        
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        .toggle-checkbox:checked { right: 0; border-color: #3b82f6; }
+        .toggle-checkbox:checked + .toggle-label { background-color: #3b82f6; }
     </style>
 </head>
 <body class="p-4 md:p-8 flex items-center justify-center">
 
-    <!-- ================= หน้า LOGIN ================= -->
+    <!-- Login Section -->
     <div id="loginSection" class="w-full max-w-sm bg-white/90 backdrop-blur-md rounded-2xl shadow-xl p-8 border border-white animate-pop-in">
         <div class="text-center mb-8">
-            <div class="bg-blue-600 text-white w-12 h-12 rounded-xl flex items-center justify-center text-2xl mx-auto mb-4 shadow-lg transform rotate-3">
-                🧾
-            </div>
+            <div class="bg-blue-600 text-white w-12 h-12 rounded-xl flex items-center justify-center text-2xl mx-auto mb-4 shadow-lg transform rotate-3">🧾</div>
             <h2 class="text-2xl font-bold text-gray-800">เข้าสู่ระบบ</h2>
             <p class="text-gray-500 text-sm mt-1">ระบบออกใบ 50 ทวิ VKT</p>
         </div>
-
         <div class="space-y-4">
             <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-1">ชื่อผู้ใช้งาน</label>
@@ -66,90 +66,621 @@
         </div>
     </div>
 
-    <!-- ================= หน้า DASHBOARD ================= -->
+    <!-- Main Dashboard -->
     <div id="mainSection" class="w-full max-w-6xl mx-auto bg-white rounded-2xl shadow-xl p-6 md:p-8 hidden animate-pop-in">
-        <div class="flex flex-col md:flex-row justify-between items-center border-b pb-4 mb-6 gap-4">
+        
+        <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
             <div class="flex items-center gap-3">
                 <span class="text-3xl">🖨️</span>
                 <h2 class="text-2xl font-bold text-gray-800">ออกใบ 50 ทวิ (Dot Matrix)</h2>
             </div>
-            <div class="flex gap-4 items-center bg-gray-50 px-4 py-2 rounded-full border border-gray-100">
+            <div class="flex gap-4 items-center bg-gray-50 px-4 py-2 rounded-full border border-gray-100 shadow-sm">
                 <span id="currentUser" class="text-gray-600 font-semibold text-sm"></span>
                 <div class="w-px h-4 bg-gray-300"></div>
                 <button onclick="handleLogout()" class="text-red-500 hover:text-red-700 font-bold text-sm transition-colors">ออกจากระบบ</button>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="bg-blue-50/50 p-5 rounded-xl border border-blue-100 relative overflow-hidden">
-                <div class="absolute top-0 left-0 w-1 h-full bg-blue-400"></div>
-                <h3 class="font-bold text-blue-800 mb-4 flex items-center gap-2"><span>1.</span> ลูกค้า (ผู้มีหน้าที่หัก)</h3>
-                <input type="text" id="payerName" placeholder="ชื่อลูกค้า" class="w-full mb-3 p-2.5 border border-gray-200 rounded-lg text-sm focus:ring-1 focus:ring-blue-400 focus:outline-none">
-                <textarea id="payerAddress" placeholder="ที่อยู่ลูกค้า" class="w-full mb-3 p-2.5 border border-gray-200 rounded-lg text-sm focus:ring-1 focus:ring-blue-400 focus:outline-none" rows="2"></textarea>
-                <input type="text" id="payerIdCard" placeholder="เลขบัตรประชาชน" class="w-full mb-3 p-2.5 border border-gray-200 rounded-lg text-sm focus:ring-1 focus:ring-blue-400 focus:outline-none">
-                <input type="text" id="payerTaxId" placeholder="เลขผู้เสียภาษีอากร" class="w-full p-2.5 border border-gray-200 rounded-lg text-sm focus:ring-1 focus:ring-blue-400 focus:outline-none">
-            </div>
-
-            <div class="bg-purple-50/50 p-5 rounded-xl border border-purple-100 relative overflow-hidden">
-                <div class="absolute top-0 left-0 w-1 h-full bg-purple-400"></div>
-                <h3 class="font-bold text-purple-800 mb-4 flex items-center gap-2"><span>2.</span> กระทำการแทน (VKT)</h3>
-                <input type="text" id="agentName" class="w-full mb-3 p-2.5 border border-gray-200 rounded-lg text-sm bg-white" value="VKT& TRANSPORT LIMITED PARTNERSHIP">
-                <textarea id="agentAddress" class="w-full mb-3 p-2.5 border border-gray-200 rounded-lg text-sm bg-white" rows="2">5/12 Moo 15, Khlong Song, Khlong Luang, Pathum Thani 12120</textarea>
-                <input type="text" id="agentTaxId" class="w-full p-2.5 border border-gray-200 rounded-lg text-sm bg-white" value="0 1335 54001 05 7">
-            </div>
-
-            <div class="bg-green-50/50 p-5 rounded-xl border border-green-100 relative overflow-hidden">
-                <div class="absolute top-0 left-0 w-1 h-full bg-green-400"></div>
-                <h3 class="font-bold text-green-800 mb-4 flex items-center gap-2"><span>3.</span> ผู้ถูกหัก (คนขับรถ/ลาน)</h3>
-                <input type="text" id="payeeName" placeholder="ชื่อ-นามสกุล" class="w-full mb-3 p-2.5 border border-gray-200 rounded-lg text-sm focus:ring-1 focus:ring-green-400 focus:outline-none">
-                <textarea id="payeeAddress" placeholder="ที่อยู่" class="w-full mb-3 p-2.5 border border-gray-200 rounded-lg text-sm focus:ring-1 focus:ring-green-400 focus:outline-none" rows="2"></textarea>
-                <input type="text" id="payeeIdCard" placeholder="เลขบัตรประชาชน (13 หลัก)" class="w-full p-2.5 border border-gray-200 rounded-lg text-sm focus:ring-1 focus:ring-green-400 focus:outline-none">
-            </div>
-        </div>
-
-        <div class="mt-8 bg-gray-50 p-5 rounded-xl border border-gray-200 flex flex-col md:flex-row items-end gap-5">
-            <div class="w-full md:w-1/4">
-                <label class="block text-sm font-bold text-gray-700 mb-1.5">เล่มที่ (อ้างอิงล่าสุด)</label>
-                <input type="text" id="bookNo" value="001" class="w-full p-3 border border-gray-300 rounded-lg bg-gray-200 text-gray-600 font-mono" readonly>
-            </div>
-            <div class="w-full md:w-1/4">
-                <label class="block text-sm font-bold text-gray-700 mb-1.5">จำนวนชุดที่ต้องการ</label>
-                <input type="number" id="printAmount" value="25" min="1" max="100" class="w-full p-3 border border-gray-300 rounded-lg text-xl font-bold text-center text-blue-600 focus:ring-2 focus:ring-blue-500 focus:outline-none">
-            </div>
-            <div class="w-full md:w-2/4">
-                <button id="generateBtn" onclick="processDocument()" class="w-full bg-gray-900 hover:bg-black text-white font-bold py-3.5 px-4 rounded-lg shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-2">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
-                    สร้างไฟล์ PDF
+        <div class="flex justify-between items-center border-b border-gray-200 mb-6">
+            <div class="flex overflow-x-auto">
+                <button onclick="switchTab('form')" id="tab-form" class="px-6 py-3 font-bold text-blue-600 border-b-2 border-blue-600 focus:outline-none flex items-center gap-2 whitespace-nowrap transition-colors">
+                    📝 ฟอร์มสร้างเอกสาร
+                </button>
+                <button onclick="switchTab('history')" id="tab-history" class="px-6 py-3 font-bold text-gray-500 hover:text-gray-700 border-b-2 border-transparent focus:outline-none flex items-center gap-2 whitespace-nowrap transition-colors">
+                    🕒 ประวัติการสร้าง
                 </button>
             </div>
+            
+            <div id="vktToggleWrapper" class="hidden md:flex items-center gap-2 pr-2">
+                <span class="text-sm font-medium text-gray-500">แก้ไขข้อมูล VKT</span>
+                <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+                    <input type="checkbox" id="toggleAgent" onclick="toggleAgentBox()" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer"/>
+                    <label for="toggleAgent" class="toggle-label block overflow-hidden h-5 rounded-full bg-gray-300 cursor-pointer"></label>
+                </div>
+            </div>
         </div>
 
-        <div id="statusAlert" class="mt-6 hidden p-4 rounded-lg font-bold text-center border"></div>
+        <!-- หน้าฟอร์ม -->
+        <div id="formSection" class="animate-pop-in">
+            <div id="gridContainer" class="grid grid-cols-1 md:grid-cols-2 gap-6 transition-all duration-300">
+                
+                <!-- 1. ผู้หัก (ลูกค้า) -->
+                <div class="bg-blue-50/50 p-5 rounded-xl border border-blue-100 border-l-4 border-l-blue-500 relative flex flex-col">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="font-bold text-blue-800 flex items-center gap-2"><span>1.</span> ลูกค้า (ผู้มีหน้าที่หัก)</h3>
+                        <button onclick="openModal('payerModal')" class="text-xs bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 shadow-sm transition-colors">➕ เพิ่มใหม่</button>
+                    </div>
+                    
+                    <div class="relative w-full mb-3">
+                        <input type="text" id="payerName" oninput="filterPayer()" onfocus="filterPayer()" placeholder="พิมพ์ชื่อเพื่อค้นหา หรือกรอกชื่อใหม่..." class="w-full p-2.5 border border-blue-300 rounded-lg text-sm bg-white font-semibold text-blue-900 focus:ring-2 focus:ring-blue-500 focus:outline-none shadow-sm" autocomplete="off">
+                        <div id="payerDropdown" class="absolute z-50 w-full bg-white border border-gray-200 rounded-lg shadow-xl hidden max-h-60 overflow-y-auto mt-1 custom-scrollbar"></div>
+                    </div>
+
+                    <textarea id="payerAddress" placeholder="ที่อยู่ลูกค้า" class="w-full mb-3 p-2.5 border border-gray-200 rounded-lg text-sm focus:ring-1 focus:ring-blue-400 focus:outline-none" rows="2"></textarea>
+                    <input type="text" id="payerIdCard" placeholder="เลข ปชช." class="w-full mb-3 p-2.5 border border-gray-200 rounded-lg text-sm focus:ring-1 focus:ring-blue-400 focus:outline-none">
+                    <input type="text" id="payerTaxId" placeholder="เลข ภาษี" class="w-full p-2.5 border border-gray-200 rounded-lg text-sm focus:ring-1 focus:ring-blue-400 focus:outline-none">
+                </div>
+
+                <!-- 2. กระทำการแทน (VKT) -->
+                <div id="agentBox" class="hidden bg-purple-50/50 p-5 rounded-xl border border-purple-100 border-l-4 border-l-purple-500 relative flex flex-col animate-pop-in">
+                    <h3 class="font-bold text-purple-800 mb-3 flex items-center gap-2 mt-1.5"><span>2.</span> กระทำการแทน (VKT)</h3>
+                    <div class="h-9 mb-4"></div>
+                    <input type="text" id="agentName" class="w-full mb-3 p-2.5 border border-gray-200 rounded-lg text-sm bg-white font-semibold text-purple-900" value="VKT & TRANSPORT LIMITED PARTNERSHIP">
+                    <textarea id="agentAddress" class="w-full mb-3 p-2.5 border border-gray-200 rounded-lg text-sm bg-white" rows="2">5/12 Moo 15, Khlong Song, Khlong Luang, Pathum Thani 12120</textarea>
+                    <div class="h-9 mb-3"></div>
+                    <input type="text" id="agentTaxId" class="w-full p-2.5 border border-gray-200 rounded-lg text-sm bg-white" value="0 1335 54001 05 7">
+                </div>
+
+                <!-- 3. ผู้ถูกหัก -->
+                <div class="bg-green-50/50 p-5 rounded-xl border border-green-100 border-l-4 border-l-green-500 relative flex flex-col">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="font-bold text-green-800 flex items-center gap-2"><span>3.</span> ผู้ถูกหัก (คนขับรถ/ลาน)</h3>
+                        <button onclick="openModal('payeeModal')" class="text-xs bg-green-600 text-white px-3 py-1.5 rounded-lg hover:bg-green-700 shadow-sm transition-colors">➕ เพิ่มใหม่</button>
+                    </div>
+
+                    <div class="relative w-full mb-3">
+                        <input type="text" id="payeeName" oninput="filterPayee()" onfocus="filterPayee()" placeholder="พิมพ์ชื่อเพื่อค้นหา หรือกรอกชื่อใหม่..." class="w-full p-2.5 border border-green-300 rounded-lg text-sm bg-white font-semibold text-green-900 focus:ring-2 focus:ring-green-500 focus:outline-none shadow-sm" autocomplete="off">
+                        <div id="payeeDropdown" class="absolute z-50 w-full bg-white border border-gray-200 rounded-lg shadow-xl hidden max-h-60 overflow-y-auto mt-1 custom-scrollbar"></div>
+                    </div>
+
+                    <textarea id="payeeAddress" placeholder="ที่อยู่" class="w-full mb-3 p-2.5 border border-gray-200 rounded-lg text-sm focus:ring-1 focus:ring-green-400 focus:outline-none" rows="2"></textarea>
+                    <input type="text" id="payeeIdCard" placeholder="เลข ปชช." class="w-full mb-3 p-2.5 border border-gray-200 rounded-lg text-sm focus:ring-1 focus:ring-green-400 focus:outline-none">
+                    <input type="text" id="payeeTaxId" placeholder="เลข ภาษี" class="w-full p-2.5 border border-gray-200 rounded-lg text-sm focus:ring-1 focus:ring-green-400 focus:outline-none">
+                </div>
+            </div>
+
+            <!-- ส่วนควบคุมการพิมพ์ (ปรับเป็น 2x2 Grid) -->
+            <div class="mt-8 bg-gray-50 p-6 rounded-xl border border-gray-200 flex flex-col gap-6 shadow-sm">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    
+                    <!-- แถว 1 -->
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-1.5">ประจำเดือน/ปี</label>
+                        <input type="month" id="docMonthYear" onchange="fetchCurrentSequence()" class="w-full p-4 border border-gray-300 rounded-lg text-lg font-bold text-center text-gray-800 focus:ring-2 focus:ring-blue-500 focus:outline-none cursor-pointer">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-1.5">เล่มที่</label>
+                        <input type="text" id="bookNoDisplay" value="..." class="w-full p-4 border border-gray-300 rounded-lg bg-gray-200 text-blue-700 font-mono font-bold text-center text-lg shadow-inner" readonly>
+                    </div>
+                    
+                    <!-- แถว 2 -->
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-1.5 flex justify-between items-center">
+                            <span>คิวเลขที่ต่อไป</span>
+                            <span id="currentSeqDisplay" onclick="editSequence()" class="text-xs text-blue-600 font-medium cursor-pointer hover:underline bg-blue-50 px-2 py-1 rounded border border-blue-100 transition-colors" title="คลิกเพื่อแก้ไขลำดับเลขคิว">กำลังโหลด... ✏️</span>
+                        </label>
+                        <input type="text" id="nextDocNo" value="..." class="w-full p-4 border border-gray-300 rounded-lg bg-white text-green-700 font-mono font-bold text-center text-lg shadow-inner" readonly>
+                    </div>
+
+                    <div class="relative">
+                        <label class="block text-sm font-bold text-gray-700 mb-1.5">จำนวนชุดที่ต้องการ <span class="text-red-500">*</span></label>
+                        <input type="number" id="printAmount" value="25" min="1" max="100" class="w-full p-4 border-2 border-blue-400 rounded-lg text-2xl font-bold text-center text-blue-800 bg-blue-50 focus:ring-4 focus:ring-blue-200 focus:outline-none shadow-inner">
+                    </div>
+                </div>
+
+                <div class="w-full mt-2">
+                    <button onclick="showConfirmModal()" class="w-full bg-gray-900 hover:bg-black text-white font-bold py-4 px-4 rounded-lg shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-2 text-lg">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                        สร้างไฟล์ PDF
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- หน้าประวัติ -->
+        <div id="historySection" class="hidden animate-pop-in">
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-4">
+                <h3 class="font-bold text-lg text-gray-800 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    ประวัติการสร้างเอกสาร (Audit Log)
+                </h3>
+                <div class="flex items-center gap-2 w-full sm:w-auto">
+                    <input type="text" id="searchLog" oninput="filterLogs()" placeholder="🔍 ค้นหา (เล่มที่, เลขที่, ชื่อ)..." class="p-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none w-full sm:w-64">
+                    <button onclick="fetchLogs()" class="text-sm text-blue-600 hover:bg-blue-100 bg-blue-50 px-3 py-2.5 rounded-lg border border-blue-100 whitespace-nowrap transition-colors">รีเฟรช 🔄</button>
+                </div>
+            </div>
+            
+            <div class="bg-gray-50 rounded-xl border border-gray-200 overflow-hidden overflow-x-auto shadow-sm min-h-[300px]">
+                <table class="w-full text-sm text-left text-gray-600">
+                    <thead class="text-xs text-gray-700 bg-gray-200 border-b">
+                        <tr>
+                            <th class="px-4 py-3 w-40">วัน-เวลา</th>
+                            <th class="px-4 py-3">รายละเอียดการออกเอกสาร</th>
+                            <th class="px-4 py-3 text-center w-32">ผู้ทำรายการ</th>
+                            <th class="px-4 py-3 text-center w-32">จัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logContainer">
+                        <tr><td colspan="4" class="px-4 py-8 text-center"><span class="spinner spinner-dark"></span> กำลังโหลดข้อมูล...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="flex justify-between items-center mt-4">
+                <span id="pageInfo" class="text-sm text-gray-600 font-medium">หน้า 1 จาก 1</span>
+                <div class="flex gap-2">
+                    <button id="btnPrev" onclick="prevPage()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors">ก่อนหน้า</button>
+                    <button id="btnNext" onclick="nextPage()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors">ถัดไป</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirm Modal -->
+    <div id="confirmModal" class="fixed inset-0 bg-black/60 z-50 hidden items-center justify-center backdrop-blur-sm transition-opacity">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 animate-pop-in border-t-4 border-blue-600">
+            <h3 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2 flex items-center gap-2">⚠️ ยืนยันข้อมูลก่อนสร้าง PDF</h3>
+            <div class="space-y-3 text-sm text-gray-700 mb-6 bg-gray-50 p-4 rounded-lg border">
+                <p class="flex justify-between border-b pb-1"><span>เริ่มที่เล่ม:</span> <strong id="lblCBook" class="text-blue-700"></strong></p>
+                <p class="flex justify-between border-b pb-1"><span>เริ่มที่เลข:</span> <strong id="lblCNum" class="text-green-700"></strong></p>
+                <p class="flex justify-between border-b pb-1"><span>จำนวนทั้งหมด:</span> <strong id="lblCAmt" class="text-lg text-gray-900"></strong></p>
+                <p class="flex justify-between border-b pb-1"><span>ลูกค้า (ผู้หัก):</span> <strong id="lblCPayer" class="text-right w-2/3 truncate"></strong></p>
+                <p class="flex justify-between"><span>ผู้ถูกหัก:</span> <strong id="lblCPayee" class="text-right w-2/3 truncate"></strong></p>
+            </div>
+            <div class="flex gap-3 justify-end">
+                <button onclick="closeModal('confirmModal')" class="px-5 py-2.5 bg-gray-200 text-gray-700 font-bold rounded-lg hover:bg-gray-300 transition-colors">ยกเลิก</button>
+                <button onclick="executeProcessDocument()" id="btnConfirmGenerate" class="px-5 py-2.5 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 shadow flex items-center gap-2 transition-colors">ยืนยันสร้าง PDF</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payer Modal -->
+    <div id="payerModal" class="fixed inset-0 bg-black/60 z-50 hidden items-center justify-center backdrop-blur-sm transition-opacity">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 animate-pop-in">
+            <h3 class="text-xl font-bold text-blue-800 mb-4 border-b pb-2">➕ เพิ่มลูกค้าใหม่</h3>
+            <input type="text" id="newPayerName" placeholder="ชื่อลูกค้า" class="w-full mb-3 p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none">
+            <textarea id="newPayerAddress" placeholder="ที่อยู่ลูกค้า" class="w-full mb-3 p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none" rows="2"></textarea>
+            <input type="text" id="newPayerIdCard" placeholder="เลขบัตรประชาชน" class="w-full mb-3 p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none">
+            <input type="text" id="newPayerTaxId" placeholder="เลขผู้เสียภาษีอากร" class="w-full mb-5 p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none">
+            <div class="flex gap-3 justify-end">
+                <button onclick="closeModal('payerModal')" class="px-5 py-2.5 bg-gray-200 text-gray-700 font-bold rounded-lg hover:bg-gray-300 transition-colors">ยกเลิก</button>
+                <button onclick="saveNewPayer()" id="btnSavePayer" class="px-5 py-2.5 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 shadow transition-colors">บันทึกข้อมูล</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payee Modal -->
+    <div id="payeeModal" class="fixed inset-0 bg-black/60 z-50 hidden items-center justify-center backdrop-blur-sm transition-opacity">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 animate-pop-in">
+            <h3 class="text-xl font-bold text-green-800 mb-4 border-b pb-2">➕ เพิ่มคนขับรถ/ลานตู้</h3>
+            <input type="text" id="newPayeeName" placeholder="ชื่อ-นามสกุล/นิติบุคคล" class="w-full mb-3 p-2.5 border rounded-lg focus:ring-2 focus:ring-green-400 outline-none">
+            <textarea id="newPayeeAddress" placeholder="ที่อยู่" class="w-full mb-3 p-2.5 border rounded-lg focus:ring-2 focus:ring-green-400 outline-none" rows="2"></textarea>
+            <input type="text" id="newPayeeIdCard" placeholder="เลขบัตรประชาชน (13 หลัก)" class="w-full mb-3 p-2.5 border rounded-lg focus:ring-2 focus:ring-green-400 outline-none">
+            <input type="text" id="newPayeeTaxId" placeholder="เลขผู้เสียภาษีอากร" class="w-full mb-5 p-2.5 border rounded-lg focus:ring-2 focus:ring-green-400 outline-none">
+            <div class="flex gap-3 justify-end">
+                <button onclick="closeModal('payeeModal')" class="px-5 py-2.5 bg-gray-200 text-gray-700 font-bold rounded-lg hover:bg-gray-300 transition-colors">ยกเลิก</button>
+                <button onclick="saveNewPayee()" id="btnSavePayee" class="px-5 py-2.5 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 shadow transition-colors">บันทึกข้อมูล</button>
+            </div>
+        </div>
     </div>
 
     <script>
-        // ประกาศตัวแปรเชื่อมต่อแค่รอบเดียวเท่านั้น
         const SUPABASE_URL = 'https://ymemvhmoyixpdcimihht.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_zWQkU24vBJMAba7ldFQSEg_IcsE_W3B';
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY); 
         const GAS_URL = 'https://script.google.com/macros/s/AKfycbxCGPmMYTHh5wsnBjG0hVl_eHUB5PDF2u-vE0VnuDMJz8vxWmoRMKvY6ckm9JughQJo/exec';
 
-        // เช็กสถานะการล็อกอินตอนโหลดหน้า
+        let payersData = [];
+        let payeesData = [];
+        
+        let allLogs = [];
+        let filteredLogs = [];
+        let currentLogPage = 1;
+        const logsPerPage = 10;
+
         window.onload = () => {
-            document.body.classList.remove('items-center', 'justify-center'); // เคลียร์คลาสตอนโหลดเพื่อจัด layout
+            document.body.classList.remove('items-center', 'justify-center');
+            
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            document.getElementById('docMonthYear').value = `${yyyy}-${mm}`;
+
             const user = localStorage.getItem('vktUser');
-            if (user) {
-                showMain(user);
-            } else {
+            if (user) showMain(user);
+            else {
                 document.body.classList.add('items-center', 'justify-center');
                 document.getElementById('loginSection').classList.remove('hidden');
             }
         };
 
-        // ฟังก์ชันรับการกด Enter
-        function handleEnter(event) {
-            if (event.key === 'Enter') {
-                handleLogin();
+        function handleEnter(event) { if (event.key === 'Enter') handleLogin(); }
+
+        document.addEventListener('click', function(e) {
+            if(!e.target.closest('#payerName') && !e.target.closest('#payerDropdown')) {
+                document.getElementById('payerDropdown').classList.add('hidden');
+            }
+            if(!e.target.closest('#payeeName') && !e.target.closest('#payeeDropdown')) {
+                document.getElementById('payeeDropdown').classList.add('hidden');
+            }
+        });
+
+        function toggleAgentBox() {
+            const isChecked = document.getElementById('toggleAgent').checked;
+            const agentBox = document.getElementById('agentBox');
+            const grid = document.getElementById('gridContainer');
+
+            if (isChecked) {
+                agentBox.classList.remove('hidden');
+                grid.classList.remove('md:grid-cols-2');
+                grid.classList.add('md:grid-cols-3');
+            } else {
+                agentBox.classList.add('hidden');
+                grid.classList.remove('md:grid-cols-3');
+                grid.classList.add('md:grid-cols-2');
+            }
+        }
+
+        function switchTab(tab) {
+            const toggleWrapper = document.getElementById('vktToggleWrapper');
+            if (tab === 'form') {
+                document.getElementById('formSection').classList.remove('hidden');
+                document.getElementById('historySection').classList.add('hidden');
+                document.getElementById('tab-form').classList.replace('text-gray-500', 'text-blue-600');
+                document.getElementById('tab-form').classList.replace('border-transparent', 'border-blue-600');
+                document.getElementById('tab-history').classList.replace('text-blue-600', 'text-gray-500');
+                document.getElementById('tab-history').classList.replace('border-blue-600', 'border-transparent');
+                toggleWrapper.classList.remove('hidden'); 
+            } else {
+                document.getElementById('formSection').classList.add('hidden');
+                document.getElementById('historySection').classList.remove('hidden');
+                document.getElementById('tab-history').classList.replace('text-gray-500', 'text-blue-600');
+                document.getElementById('tab-history').classList.replace('border-transparent', 'border-blue-600');
+                document.getElementById('tab-form').classList.replace('text-blue-600', 'text-gray-500');
+                document.getElementById('tab-form').classList.replace('border-blue-600', 'border-transparent');
+                toggleWrapper.classList.add('hidden'); 
+                fetchLogs(); 
+            }
+        }
+
+        function openModal(id) {
+            const m = document.getElementById(id);
+            m.classList.remove('hidden'); m.classList.add('flex');
+            if(id !== 'confirmModal') m.querySelectorAll('input, textarea').forEach(el => el.value = '');
+        }
+
+        function closeModal(id) {
+            const m = document.getElementById(id);
+            m.classList.add('hidden'); m.classList.remove('flex');
+        }
+
+        async function fetchPayers() {
+            const { data } = await supabaseClient.from('payers').select('*').order('created_at', { ascending: false });
+            if (data) payersData = data;
+        }
+
+        async function fetchPayees() {
+            const { data } = await supabaseClient.from('payees').select('*').order('created_at', { ascending: false });
+            if (data) payeesData = data;
+        }
+
+        function filterPayer() {
+            const query = document.getElementById('payerName').value.toLowerCase();
+            const dropdown = document.getElementById('payerDropdown');
+            if (!query) { dropdown.classList.add('hidden'); return; }
+
+            const filtered = payersData.filter(p => 
+                (p.payer_name && p.payer_name.toLowerCase().includes(query)) || 
+                (p.payer_tax_id && p.payer_tax_id.includes(query)) ||
+                (p.payer_address && p.payer_address.toLowerCase().includes(query))
+            );
+            
+            if (filtered.length > 0) {
+                dropdown.innerHTML = filtered.map(p => `
+                    <div onclick="selectPayer('${p.id}')" class="p-3 border-b border-gray-100 hover:bg-blue-50 cursor-pointer transition-colors">
+                        <div class="font-bold text-blue-900">${p.payer_name}</div>
+                        <div class="text-xs text-gray-500 truncate mt-0.5">${p.payer_address} | ภาษี: ${p.payer_tax_id || '-'}</div>
+                    </div>
+                `).join('');
+                dropdown.classList.remove('hidden');
+            } else {
+                dropdown.innerHTML = `<div class="p-3 text-sm text-gray-500 text-center bg-gray-50">ไม่พบข้อมูล (ระบบจะใช้ชื่อนี้เป็นข้อมูลใหม่)</div>`;
+                dropdown.classList.remove('hidden');
+            }
+        }
+
+        function selectPayer(id) {
+            const p = payersData.find(x => x.id === id);
+            if (p) {
+                document.getElementById('payerName').value = p.payer_name || '';
+                document.getElementById('payerAddress').value = p.payer_address || '';
+                document.getElementById('payerIdCard').value = p.payer_id_card || '';
+                document.getElementById('payerTaxId').value = p.payer_tax_id || '';
+            }
+            document.getElementById('payerDropdown').classList.add('hidden');
+        }
+
+        function filterPayee() {
+            const query = document.getElementById('payeeName').value.toLowerCase();
+            const dropdown = document.getElementById('payeeDropdown');
+            if (!query) { dropdown.classList.add('hidden'); return; }
+
+            const filtered = payeesData.filter(p => 
+                (p.payee_name && p.payee_name.toLowerCase().includes(query)) || 
+                (p.payee_tax_id && p.payee_tax_id.includes(query)) ||
+                (p.payee_address && p.payee_address.toLowerCase().includes(query))
+            );
+            
+            if (filtered.length > 0) {
+                dropdown.innerHTML = filtered.map(p => `
+                    <div onclick="selectPayee('${p.id}')" class="p-3 border-b border-gray-100 hover:bg-green-50 cursor-pointer transition-colors">
+                        <div class="font-bold text-green-900">${p.payee_name}</div>
+                        <div class="text-xs text-gray-500 truncate mt-0.5">${p.payee_address} | ภาษี: ${p.payee_tax_id || '-'}</div>
+                    </div>
+                `).join('');
+                dropdown.classList.remove('hidden');
+            } else {
+                dropdown.innerHTML = `<div class="p-3 text-sm text-gray-500 text-center bg-gray-50">ไม่พบข้อมูล (ระบบจะใช้ชื่อนี้เป็นข้อมูลใหม่)</div>`;
+                dropdown.classList.remove('hidden');
+            }
+        }
+
+        function selectPayee(id) {
+            const p = payeesData.find(x => x.id === id);
+            if (p) {
+                document.getElementById('payeeName').value = p.payee_name || '';
+                document.getElementById('payeeAddress').value = p.payee_address || '';
+                document.getElementById('payeeIdCard').value = p.payee_id_card || '';
+                document.getElementById('payeeTaxId').value = p.payee_tax_id || '';
+            }
+            document.getElementById('payeeDropdown').classList.add('hidden');
+        }
+
+        async function fetchLogs() {
+            document.getElementById('logContainer').innerHTML = '<tr><td colspan="4" class="px-4 py-8 text-center"><span class="spinner spinner-dark"></span> กำลังโหลดข้อมูล...</td></tr>';
+            const { data } = await supabaseClient.from('app_logs').select('*').order('created_at', { ascending: false }).limit(1000); 
+            if (data) {
+                allLogs = data;
+                document.getElementById('searchLog').value = '';
+                filterLogs();
+            } else {
+                allLogs = []; filterLogs();
+            }
+        }
+
+        function filterLogs() {
+            const query = document.getElementById('searchLog').value.toLowerCase();
+            filteredLogs = allLogs.filter(log => 
+                log.action_detail.toLowerCase().includes(query) || 
+                log.username.toLowerCase().includes(query)
+            );
+            currentLogPage = 1;
+            renderLogs();
+        }
+
+        function renderLogs() {
+            const container = document.getElementById('logContainer');
+            
+            if (filteredLogs.length === 0) {
+                container.innerHTML = '<tr><td colspan="4" class="px-4 py-8 text-center text-gray-500">ไม่พบข้อมูลประวัติ</td></tr>';
+                document.getElementById('pageInfo').innerText = `หน้า 1 จาก 1`;
+                document.getElementById('btnPrev').disabled = true;
+                document.getElementById('btnNext').disabled = true;
+                return;
+            }
+
+            const totalPages = Math.ceil(filteredLogs.length / logsPerPage);
+            if (currentLogPage > totalPages) currentLogPage = totalPages;
+
+            const startIdx = (currentLogPage - 1) * logsPerPage;
+            const endIdx = startIdx + logsPerPage;
+            const currentData = filteredLogs.slice(startIdx, endIdx);
+
+            container.innerHTML = currentData.map(log => {
+                const d = new Date(log.created_at);
+                const timeStr = `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()+543} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+                
+                const parts = log.action_detail.split('_URL_');
+                const detailText = parts[0];
+                const pdfLink = parts[1] || '';
+                
+                const isCancelled = detailText.includes('[ยกเลิก]');
+
+                let btnHTML = '';
+                if (isCancelled) {
+                    btnHTML += `<span class="text-xs bg-red-50 text-red-600 px-3 py-1.5 rounded border border-red-200 font-bold whitespace-nowrap">ยกเลิกแล้ว</span>`;
+                } else {
+                    if (pdfLink) {
+                        btnHTML += `<button onclick="window.open('${pdfLink}', '_blank')" class="text-xs bg-blue-100 text-blue-700 px-3 py-1.5 rounded hover:bg-blue-200 mr-2 shadow-sm font-bold transition-colors">PDF</button>`;
+                    } else {
+                        btnHTML += `<button disabled class="text-xs bg-gray-100 text-gray-400 px-3 py-1.5 rounded mr-2 shadow-sm font-bold cursor-not-allowed">PDF</button>`;
+                    }
+                    btnHTML += `<button onclick="deleteLog('${log.id}')" class="text-xs bg-red-100 text-red-700 px-3 py-1.5 rounded hover:bg-red-200 shadow-sm font-bold transition-colors">ยกเลิก</button>`;
+                }
+
+                const textStyle = isCancelled ? 'text-red-500 line-through opacity-80' : 'text-gray-800 font-medium';
+
+                return `
+                    <tr class="bg-white border-b hover:bg-gray-50 transition-colors">
+                        <td class="px-4 py-3 whitespace-nowrap">${timeStr}</td>
+                        <td class="px-4 py-3 ${textStyle}">${detailText}</td>
+                        <td class="px-4 py-3 text-center text-gray-500">${log.username}</td>
+                        <td class="px-4 py-3 text-center whitespace-nowrap">${btnHTML}</td>
+                    </tr>
+                `;
+            }).join('');
+
+            document.getElementById('pageInfo').innerText = `หน้า ${currentLogPage} จาก ${totalPages}`;
+            document.getElementById('btnPrev').disabled = currentLogPage === 1;
+            document.getElementById('btnNext').disabled = currentLogPage === totalPages;
+        }
+
+        function prevPage() { if(currentLogPage > 1) { currentLogPage--; renderLogs(); } }
+        function nextPage() { 
+            const totalPages = Math.ceil(filteredLogs.length / logsPerPage);
+            if(currentLogPage < totalPages) { currentLogPage++; renderLogs(); } 
+        }
+
+        async function deleteLog(id) {
+            Swal.fire({
+                title: 'ยืนยันการยกเลิกเอกสาร?',
+                text: "ระบบจะบันทึกประวัติว่ามีการยกเลิก และถอยคิวเลขที่กลับให้อัตโนมัติ (Soft Delete)",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#9ca3af',
+                confirmButtonText: 'ยกเลิกเอกสาร',
+                cancelButtonText: 'ปิดหน้าต่าง'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({ title: 'กำลังบันทึกการยกเลิก...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
+                    
+                    const currentUser = localStorage.getItem('vktUser') || 'Unknown';
+
+                    const { data: logData } = await supabaseClient.from('app_logs').select('*').eq('id', id).single();
+                    let targetMMYY = "";
+                    let targetDBKey = "";
+
+                    if (logData) {
+                        const oldText = logData.action_detail.split('_URL_')[0];
+                        const mmMatch = oldText.match(/เล่มที่ (\d{2}\/\d{2})/);
+                        if (mmMatch && mmMatch[1]) {
+                            targetMMYY = mmMatch[1];
+                            targetDBKey = targetMMYY.replace('/', '');
+                        }
+
+                        const newText = `❌ [ยกเลิก] ${oldText.replace('คิวรวมที่', 'เดิมคิวที่')} (ผู้ยกเลิก: ${currentUser})`;
+                        await supabaseClient.from('app_logs').update({ action_detail: newText }).eq('id', id);
+                    }
+                    
+                    if (targetMMYY) {
+                        const { data: monthLogs } = await supabaseClient
+                            .from('app_logs')
+                            .select('action_detail')
+                            .like('action_detail', `%เล่มที่ ${targetMMYY}%`)
+                            .order('created_at', { ascending: false });
+
+                        let newSeq = 0;
+                        if (monthLogs && monthLogs.length > 0) {
+                            for (let l of monthLogs) {
+                                const match = l.action_detail.match(/คิวรวมที่ \d+-(\d+)/);
+                                if (match && match[1]) {
+                                    newSeq = parseInt(match[1]);
+                                    break;
+                                }
+                            }
+                        }
+                        await supabaseClient.from('document_sequence').update({ current_sequence: newSeq }).eq('book_number', targetDBKey);
+                    }
+
+                    fetchLogs();
+                    fetchCurrentSequence();
+                    Swal.fire('สำเร็จ!', 'ยกเลิกเอกสารและถอยคิวเรียบร้อยแล้ว', 'success');
+                }
+            });
+        }
+
+        async function saveNewPayer() {
+            const btn = document.getElementById('btnSavePayer');
+            const name = document.getElementById('newPayerName').value;
+            if(!name) return Swal.fire({icon: 'error', title: 'ข้อมูลไม่ครบ', text: 'กรุณาระบุชื่อลูกค้า'});
+            btn.innerHTML = "กำลังบันทึก..."; btn.disabled = true;
+            const insertData = { payer_name: name, payer_address: document.getElementById('newPayerAddress').value, payer_id_card: document.getElementById('newPayerIdCard').value, payer_tax_id: document.getElementById('newPayerTaxId').value };
+            const { data, error } = await supabaseClient.from('payers').insert([insertData]).select();
+            if(!error && data) { 
+                closeModal('payerModal'); await fetchPayers(); 
+                document.getElementById('payerName').value = data[0].payer_name; autoFillPayerByName(); 
+                Swal.fire({icon: 'success', title: 'บันทึกสำเร็จ', showConfirmButton: false, timer: 1500});
+            } else Swal.fire({icon: 'error', title: 'บันทึกไม่สำเร็จ', text: error.message});
+            btn.innerHTML = "บันทึกข้อมูล"; btn.disabled = false;
+        }
+
+        async function saveNewPayee() {
+            const btn = document.getElementById('btnSavePayee');
+            const name = document.getElementById('newPayeeName').value;
+            if(!name) return Swal.fire({icon: 'error', title: 'ข้อมูลไม่ครบ', text: 'กรุณาระบุชื่อคนขับ/ลาน'});
+            btn.innerHTML = "กำลังบันทึก..."; btn.disabled = true;
+            const insertData = { payee_name: name, payee_address: document.getElementById('newPayeeAddress').value, payee_id_card: document.getElementById('newPayeeIdCard').value, payee_tax_id: document.getElementById('newPayeeTaxId').value };
+            const { data, error } = await supabaseClient.from('payees').insert([insertData]).select();
+            if(!error && data) { 
+                closeModal('payeeModal'); await fetchPayees(); 
+                document.getElementById('payeeName').value = data[0].payee_name; autoFillPayeeByName();
+                Swal.fire({icon: 'success', title: 'บันทึกสำเร็จ', showConfirmButton: false, timer: 1500});
+            } else Swal.fire({icon: 'error', title: 'บันทึกไม่สำเร็จ', text: error.message});
+            btn.innerHTML = "บันทึกข้อมูล"; btn.disabled = false;
+        }
+
+        function generateMonthYear() {
+            const dateVal = document.getElementById('docMonthYear').value;
+            let year, month;
+            
+            if (dateVal) {
+                const parts = dateVal.split('-');
+                year = parseInt(parts[0]);
+                month = parts[1];
+            } else {
+                const today = new Date();
+                year = today.getFullYear();
+                month = String(today.getMonth() + 1).padStart(2, '0');
+            }
+            
+            const yearTH = String(year + 543).slice(-2); 
+            return { dbKey: `${month}${yearTH}`, mmYY: `${month}/${yearTH}` };
+        }
+
+        async function fetchCurrentSequence() {
+            const dates = generateMonthYear();
+            try {
+                const { data, error } = await supabaseClient.from('document_sequence').select('*').eq('book_number', dates.dbKey).single();
+                let nextSeq = 1;
+                if (data) {
+                    nextSeq = data.current_sequence + 1;
+                    document.getElementById('currentSeqDisplay').innerHTML = `(พิมพ์ล่าสุดรวมถึงคิวที่ ${data.current_sequence}) ✏️`;
+                } else {
+                    const { error: insertErr } = await supabaseClient.from('document_sequence').insert([{ book_number: dates.dbKey, current_sequence: 0 }]);
+                    if(!insertErr) document.getElementById('currentSeqDisplay').innerHTML = `(เริ่มเดือนใหม่) ✏️`;
+                }
+                
+                let bIndex = Math.ceil(nextSeq / 50);
+                let dIndex = nextSeq % 50 === 0 ? 50 : nextSeq % 50;
+                
+                document.getElementById('bookNoDisplay').value = `${dates.mmYY}/${String(bIndex).padStart(2, '0')}`;
+                document.getElementById('nextDocNo').value = `${String(dIndex).padStart(2, '0')}/${dates.mmYY}`;
+                
+            } catch (error) { document.getElementById('currentSeqDisplay').innerText = "(ดึงเลขล้มเหลว)"; }
+        }
+
+        async function editSequence() {
+            const dates = generateMonthYear();
+            const { value: newSeq } = await Swal.fire({
+                title: `แก้ไขคิวเลขที่รวมของเดือน ${dates.mmYY}`,
+                input: 'number',
+                inputLabel: 'ระบุเลขคิวรวมล่าสุดที่พิมพ์ไปแล้ว',
+                inputPlaceholder: 'ใส่ตัวเลขคิวรวม...',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#9ca3af',
+                confirmButtonText: 'บันทึก',
+                cancelButtonText: 'ยกเลิก'
+            });
+
+            if (newSeq !== undefined && newSeq !== "") {
+                const { error } = await supabaseClient.from('document_sequence').update({ current_sequence: parseInt(newSeq) }).eq('book_number', dates.dbKey);
+                if (!error) {
+                    fetchCurrentSequence();
+                    Swal.fire({icon: 'success', title: 'อัปเดตคิวเลขที่เรียบร้อย!', showConfirmButton: false, timer: 1500});
+                } else Swal.fire('เกิดข้อผิดพลาด', error.message, 'error');
             }
         }
 
@@ -158,28 +689,16 @@
             const p = document.getElementById('loginPassword').value;
             const btn = document.getElementById('loginBtn');
             const err = document.getElementById('loginError');
-
             if(!u || !p) return;
-
-            btn.disabled = true;
-            btn.innerHTML = `<span class="spinner"></span> ตรวจสอบ...`;
-            err.classList.add('hidden');
-
+            btn.disabled = true; btn.innerHTML = `<span class="spinner"></span> ตรวจสอบ...`; err.classList.add('hidden');
             try {
-                const { data, error } = await supabase.from('simple_users').select('*').eq('username', u).eq('password', p).single();
-
-                if (data) {
-                    localStorage.setItem('vktUser', u);
-                    showMain(u);
-                } else {
-                    err.classList.remove('hidden');
-                }
-            } catch (e) {
-                err.classList.remove('hidden');
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = "เข้าสู่ระบบ";
-            }
+                const { data } = await supabaseClient.from('simple_users').select('*').eq('username', u).eq('password', p).single();
+                if (data) { 
+                    localStorage.setItem('vktUser', u); showMain(u); 
+                    Swal.fire({icon: 'success', title: 'เข้าสู่ระบบสำเร็จ', showConfirmButton: false, timer: 1000});
+                } else err.classList.remove('hidden');
+            } catch (e) { err.classList.remove('hidden'); } 
+            finally { btn.disabled = false; btn.innerHTML = "เข้าสู่ระบบ"; }
         }
 
         function showMain(username) {
@@ -187,92 +706,127 @@
             document.getElementById('loginSection').classList.add('hidden');
             document.getElementById('mainSection').classList.remove('hidden');
             document.getElementById('currentUser').innerText = `👤 ${username}`;
+            fetchCurrentSequence(); fetchPayers(); fetchPayees(); fetchLogs();
         }
 
         function handleLogout() {
-            localStorage.removeItem('vktUser');
-            document.body.classList.add('items-center', 'justify-center');
-            document.getElementById('loginSection').classList.remove('hidden');
-            document.getElementById('mainSection').classList.add('hidden');
-            document.getElementById('loginUsername').value = '';
-            document.getElementById('loginPassword').value = '';
+            Swal.fire({
+                title: 'ต้องการออกจากระบบ?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#9ca3af',
+                confirmButtonText: 'ออกจากระบบ',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    localStorage.removeItem('vktUser');
+                    document.body.classList.add('items-center', 'justify-center');
+                    document.getElementById('loginSection').classList.remove('hidden');
+                    document.getElementById('mainSection').classList.add('hidden');
+                    document.getElementById('loginUsername').value = ''; document.getElementById('loginPassword').value = '';
+                }
+            });
         }
 
-        async function processDocument() {
-            const btn = document.getElementById('generateBtn');
-            const status = document.getElementById('statusAlert');
+        function showConfirmModal() {
             const amount = parseInt(document.getElementById('printAmount').value);
-            const bookNo = document.getElementById('bookNo').value;
+            if(!amount || amount < 1) return Swal.fire({icon: 'warning', title: 'ข้อมูลไม่ครบ', text: 'กรุณาระบุจำนวนชุดที่ต้องการพิมพ์'});
+            
+            const bookNo = document.getElementById('bookNoDisplay').value;
+            const nextDocNo = document.getElementById('nextDocNo').value;
+
+            document.getElementById('lblCBook').innerText = `${bookNo} (ระบบปัดเล่มให้อัตโนมัติ)`;
+            document.getElementById('lblCNum').innerText = `${nextDocNo}`;
+            document.getElementById('lblCAmt').innerText = `${amount} ชุด`;
+            document.getElementById('lblCPayer').innerText = document.getElementById('payerName').value || "(เว้นว่าง)";
+            document.getElementById('lblCPayee').innerText = document.getElementById('payeeName').value || "(เว้นว่าง)";
+
+            openModal('confirmModal');
+        }
+
+        async function executeProcessDocument() {
+            closeModal('confirmModal');
+            const amount = parseInt(document.getElementById('printAmount').value);
+            const dates = generateMonthYear();
+            const currentBookNo = dates.dbKey;
             const currentUser = localStorage.getItem('vktUser');
 
-            if(!amount || amount < 1) return;
-
-            btn.disabled = true;
-            btn.innerHTML = `<span class="spinner" style="border-top-color:#111827;"></span> กำลังประมวลผล...`;
-            status.className = "mt-6 p-4 rounded-lg font-bold text-center bg-blue-50 text-blue-800 border-blue-200";
-            status.innerHTML = "กำลังเตรียมเอกสาร กรุณารอสักครู่...";
-            status.classList.remove('hidden');
+            Swal.fire({
+                title: 'กำลังประมวลผล PDF...',
+                html: 'กรุณารอสักครู่ ระบบกำลังจัดหน้ากระดาษและส่งมอบให้ Google Apps Script',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
 
             try {
-                const { data: seqData, error: seqError } = await supabase.from('document_sequence').select('current_sequence').eq('book_number', bookNo).single();
-                if (seqError) throw new Error("ไม่พบข้อมูลเล่มที่นี้ในระบบ Database");
+                const { data: seqData, error: seqError } = await supabaseClient.from('document_sequence').select('current_sequence').eq('book_number', currentBookNo).single();
+                if (seqError) throw new Error("ไม่พบข้อมูลเดือนนี้ในระบบ");
 
                 let currentSeq = seqData.current_sequence;
                 let startNo = currentSeq + 1;
                 let endNo = currentSeq + amount;
 
                 const payload = {
-                    bookNo: bookNo,
-                    startNo: startNo,
+                    mmYY: dates.mmYY, 
+                    startNo: startNo, 
                     endNo: endNo,
-                    payerName: document.getElementById('payerName').value || "-",
-                    payerAddress: document.getElementById('payerAddress').value || "-",
-                    payerIdCard: document.getElementById('payerIdCard').value || "-",
-                    payerTaxId: document.getElementById('payerTaxId').value || "-",
+                    payerName: document.getElementById('payerName').value || "",
+                    payerAddress: document.getElementById('payerAddress').value || "",
+                    payerIdCard: document.getElementById('payerIdCard').value || "",
+                    payerTaxId: document.getElementById('payerTaxId').value || "",
                     agentName: document.getElementById('agentName').value,
                     agentAddress: document.getElementById('agentAddress').value,
                     agentTaxId: document.getElementById('agentTaxId').value,
-                    payeeName: document.getElementById('payeeName').value || "-",
-                    payeeAddress: document.getElementById('payeeAddress').value || "-",
-                    payeeIdCard: document.getElementById('payeeIdCard').value || "-",
-                    payeeTaxId: "-"
+                    payeeName: document.getElementById('payeeName').value || "",
+                    payeeAddress: document.getElementById('payeeAddress').value || "",
+                    payeeIdCard: document.getElementById('payeeIdCard').value || "",
+                    payeeTaxId: document.getElementById('payeeTaxId').value || "" 
                 };
 
-                const response = await fetch(GAS_URL, {
-                    method: 'POST',
-                    body: JSON.stringify(payload),
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' } 
-                });
+                const response = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'text/plain;charset=utf-8' } });
                 const result = await response.json();
 
                 if (result.success) {
-                    await supabase.from('document_sequence').update({ current_sequence: endNo }).eq('book_number', bookNo);
+                    await supabaseClient.from('document_sequence').update({ current_sequence: endNo, updated_at: new Date().toISOString() }).eq('book_number', currentBookNo);
                     
-                    await supabase.from('app_logs').insert([{ 
+                    let startBIndex = Math.ceil(startNo / 50);
+                    let startDIndex = startNo % 50 === 0 ? 50 : startNo % 50;
+                    let endBIndex = Math.ceil(endNo / 50);
+                    let endDIndex = endNo % 50 === 0 ? 50 : endNo % 50;
+
+                    let startBookStr = `${dates.mmYY}/${String(startBIndex).padStart(2, '0')}`;
+                    let endBookStr = `${dates.mmYY}/${String(endBIndex).padStart(2, '0')}`;
+                    let startDocStr = `${String(startDIndex).padStart(2, '0')}/${dates.mmYY}`;
+                    let endDocStr = `${String(endDIndex).padStart(2, '0')}/${dates.mmYY}`;
+
+                    let bookDisplay = startBookStr === endBookStr ? startBookStr : `${startBookStr} ถึง ${endBookStr}`;
+                    let logDetail = `เล่มที่ ${bookDisplay} | เลขที่ ${startDocStr} ถึง ${endDocStr} (คิวรวมที่ ${startNo}-${endNo}) ลูกค้า: ${payload.payerName || '(เว้นว่าง)'}`;
+
+                    await supabaseClient.from('app_logs').insert([{ 
                         username: currentUser, 
-                        action_detail: `ออกบิล เล่ม ${bookNo} เลขที่ ${startNo}-${endNo} ให้กับ ${payload.payeeName}` 
+                        action_detail: `${logDetail}_URL_${result.url}` 
                     }]);
 
-                    status.className = "mt-6 p-5 rounded-lg font-bold text-center bg-green-50 text-green-800 border-green-200 shadow-inner";
-                    status.innerHTML = `
-                        <div class="text-xl mb-2">✅ สร้างเอกสารสำเร็จ!</div>
-                        <div class="text-sm font-normal mb-4 text-green-700">เลขที่บิล: ${startNo} ถึง ${endNo}</div>
-                        <a href="${result.url}" target="_blank" class="inline-flex items-center gap-2 bg-green-600 text-white px-6 py-2.5 rounded-lg hover:bg-green-700 transition-colors shadow-md">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                            คลิกเพื่อเปิด / ดาวน์โหลด PDF
-                        </a>`;
-                } else {
-                    throw new Error(result.message);
-                }
+                    fetchCurrentSequence(); fetchLogs();
+
+                    // --- เคลียร์ฟอร์มหลังสร้างเสร็จ ---
+                    ['payerName', 'payerAddress', 'payerIdCard', 'payerTaxId', 'payeeName', 'payeeAddress', 'payeeIdCard', 'payeeTaxId'].forEach(id => document.getElementById(id).value = '');
+                    document.getElementById('printAmount').value = 50;
+                    // ----------------------------------
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'สร้างเอกสารสำเร็จ!',
+                        text: `ระบบสร้าง PDF ครบ ${amount} ชุดเรียบร้อยแล้ว`,
+                        confirmButtonText: 'เปิดดู PDF',
+                        confirmButtonColor: '#16a34a'
+                    }).then((res) => {
+                        if (res.isConfirmed) window.open(result.url, '_blank');
+                    });
+                } else throw new Error(result.message);
             } catch (error) {
-                status.className = "mt-6 p-4 rounded-lg font-bold text-center bg-red-50 text-red-800 border-red-200";
-                status.innerHTML = `❌ เกิดข้อผิดพลาด: ${error.message}`;
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = `
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
-                    สร้างไฟล์ PDF
-                `;
+                Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: error.message });
             }
         }
     </script>
