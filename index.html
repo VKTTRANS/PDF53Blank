@@ -3,274 +3,423 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบพิมพ์ใบ 50 ทวิ</title>
+    <title>ระบบพิมพ์ใบ 50 ทวิ - VKT Transport</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap');
+        
         body { 
             font-family: 'Sarabun', sans-serif; 
-            background: linear-gradient(135deg, #e0e7ff 0%, #ede9fe 100%);
+            background-color: #f1f5f9;
+            background-image: radial-gradient(#cbd5e1 0.75px, transparent 0.75px);
+            background-size: 20px 20px;
             min-height: 100vh;
+            color: #1e293b;
         }
+        
+        .font-mono-num {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
         @keyframes popIn {
-            0% { opacity: 0; transform: scale(0.95) translateY(10px); }
+            0% { opacity: 0; transform: scale(0.98) translateY(5px); }
             100% { opacity: 1; transform: scale(1) translateY(0); }
         }
-        .animate-pop-in { animation: popIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .animate-pop-in { animation: popIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        
         .spinner {
             border: 3px solid rgba(255,255,255,0.3);
             border-radius: 50%;
             border-top: 3px solid #ffffff;
-            width: 20px; height: 20px;
-            animation: spin 1s linear infinite;
+            width: 18px; height: 18px;
+            animation: spin 0.8s linear infinite;
             display: inline-block; vertical-align: middle; margin-right: 8px;
         }
-        .spinner-dark { border: 3px solid rgba(0,0,0,0.1); border-top: 3px solid #111827; }
+        .spinner-dark { border: 3px solid rgba(0,0,0,0.1); border-top: 3px solid #0f172a; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        select { scrollbar-width: thin; }
+        
         .swal2-title, .swal2-html-container { font-family: 'Sarabun', sans-serif !important; }
         
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f8fafc; border-radius: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
-        .toggle-checkbox:checked { right: 0; border-color: #3b82f6; }
-        .toggle-checkbox:checked + .toggle-label { background-color: #3b82f6; }
+        .toggle-checkbox:checked { right: 0; border-color: #6366f1; }
+        .toggle-checkbox:checked + .toggle-label { background-color: #6366f1; }
     </style>
 </head>
-<body class="p-4 md:p-8 flex items-center justify-center">
+<body class="p-2 md:py-3 md:px-6 flex items-center justify-center">
 
-    <!-- Login Section -->
-    <div id="loginSection" class="w-full max-w-sm bg-white/90 backdrop-blur-md rounded-2xl shadow-xl p-8 border border-white animate-pop-in">
-        <div class="text-center mb-8">
-            <div class="bg-blue-600 text-white w-12 h-12 rounded-xl flex items-center justify-center text-2xl mx-auto mb-4 shadow-lg transform rotate-3">🧾</div>
-            <h2 class="text-2xl font-bold text-gray-800">เข้าสู่ระบบ</h2>
-            <p class="text-gray-500 text-sm mt-1">ระบบออกใบ 50 ทวิ VKT</p>
+    <div id="loginSection" class="w-full max-w-md bg-white rounded-3xl shadow-2xl p-8 border border-slate-100 animate-pop-in">
+        <div class="text-center mb-6">
+            <div class="bg-gradient-to-tr from-blue-600 to-indigo-600 text-white w-14 h-14 rounded-2xl flex items-center justify-center text-2xl mx-auto mb-3 shadow-lg shadow-blue-500/30">
+                🖨️
+            </div>
+            <h2 class="text-2xl font-bold text-slate-800">เข้าสู่ระบบพิมพ์ 50 ทวิ</h2>
+            <p class="text-slate-500 text-sm mt-0.5">VKT & Transport Limited Partnership</p>
         </div>
         <div class="space-y-4">
             <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-1">ชื่อผู้ใช้งาน</label>
-                <input type="text" id="loginUsername" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all" placeholder="Username" onkeypress="handleEnter(event)">
+                <label class="block text-sm font-semibold text-slate-700 mb-1">ชื่อผู้ใช้งาน (Username)</label>
+                <input type="text" id="loginUsername" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" placeholder="กรอกชื่อผู้ใช้งาน..." onkeypress="handleEnter(event)">
             </div>
             <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-1">รหัสผ่าน</label>
-                <input type="password" id="loginPassword" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all" placeholder="••••••••" onkeypress="handleEnter(event)">
+                <label class="block text-sm font-semibold text-slate-700 mb-1">รหัสผ่าน (Password)</label>
+                <input type="password" id="loginPassword" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" placeholder="••••••••" onkeypress="handleEnter(event)">
             </div>
-            <button onclick="handleLogin()" id="loginBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 flex items-center justify-center">
+            <button onclick="handleLogin()" id="loginBtn" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-3 rounded-xl shadow-lg shadow-blue-500/30 hover:shadow-xl transition-all transform hover:-translate-y-0.5 flex items-center justify-center text-base">
                 เข้าสู่ระบบ
             </button>
-            <p id="loginError" class="text-red-500 text-sm text-center bg-red-50 p-2 rounded-lg border border-red-100 hidden">ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง</p>
+            <p id="loginError" class="text-red-600 text-sm text-center bg-red-50 p-2.5 rounded-xl border border-red-100 hidden font-medium">ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง</p>
         </div>
     </div>
 
-    <!-- Main Dashboard -->
-    <div id="mainSection" class="w-full max-w-6xl mx-auto bg-white rounded-2xl shadow-xl p-6 md:p-8 hidden animate-pop-in">
+    <div id="mainSection" class="w-full max-w-6xl mx-auto bg-white rounded-3xl shadow-xl border border-slate-200/80 overflow-hidden hidden animate-pop-in">
         
-        <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
+        <div class="bg-slate-900 text-white px-6 py-3.5 flex flex-col sm:flex-row justify-between items-center gap-3">
             <div class="flex items-center gap-3">
-                <span class="text-3xl">🖨️</span>
-                <h2 class="text-2xl font-bold text-gray-800">ออกใบ 50 ทวิ (Dot Matrix)</h2>
+                <div class="bg-blue-500/20 border border-blue-400/30 p-2 rounded-xl text-xl leading-none">
+                    🖨️
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold tracking-tight flex items-center gap-2">
+                        ระบบออกใบ 50 ทวิ
+                        <span class="text-xs bg-blue-500/20 text-blue-300 border border-blue-400/30 px-2.5 py-0.5 rounded-full font-medium">Dot Matrix</span>
+                    </h1>
+                    <p class="text-xs text-slate-400">VKT & TRANSPORT LIMITED PARTNERSHIP (HEADOFFICE)</p>
+                </div>
             </div>
-            <div class="flex gap-4 items-center bg-gray-50 px-4 py-2 rounded-full border border-gray-100 shadow-sm">
-                <span id="currentUser" class="text-gray-600 font-semibold text-sm"></span>
-                <div class="w-px h-4 bg-gray-300"></div>
-                <button onclick="handleLogout()" class="text-red-500 hover:text-red-700 font-bold text-sm transition-colors">ออกจากระบบ</button>
+            <div class="flex items-center gap-3 bg-slate-800/90 px-4 py-1.5 rounded-full border border-slate-700">
+                <span id="currentUser" class="text-slate-200 font-medium text-sm"></span>
+                <div class="w-px h-4 bg-slate-600"></div>
+                <button onclick="handleLogout()" class="text-rose-400 hover:text-rose-300 font-semibold text-sm transition-colors">
+                    ออกจากระบบ
+                </button>
             </div>
         </div>
 
-        <div class="flex justify-between items-center border-b border-gray-200 mb-6">
-            <div class="flex overflow-x-auto">
-                <button onclick="switchTab('form')" id="tab-form" class="px-6 py-3 font-bold text-blue-600 border-b-2 border-blue-600 focus:outline-none flex items-center gap-2 whitespace-nowrap transition-colors">
-                    📝 ฟอร์มสร้างเอกสาร
+        <div class="bg-slate-50 border-b border-slate-200 px-6 flex flex-col sm:flex-row justify-between items-center">
+            <div class="flex space-x-1 w-full sm:w-auto overflow-x-auto">
+                <button onclick="switchTab('form')" id="tab-form" class="px-5 py-3 text-sm font-bold text-blue-600 border-b-2 border-blue-600 focus:outline-none flex items-center gap-2 whitespace-nowrap transition-all">
+                    <span>📝</span> ฟอร์มสร้างเอกสาร
                 </button>
-                <button onclick="switchTab('history')" id="tab-history" class="px-6 py-3 font-bold text-gray-500 hover:text-gray-700 border-b-2 border-transparent focus:outline-none flex items-center gap-2 whitespace-nowrap transition-colors">
-                    🕒 ประวัติการสร้าง
+                <button onclick="switchTab('history')" id="tab-history" class="px-5 py-3 text-sm font-bold text-slate-500 hover:text-slate-800 border-b-2 border-transparent focus:outline-none flex items-center gap-2 whitespace-nowrap transition-all">
+                    <span>🕒</span> ประวัติการสร้าง (Audit Log)
                 </button>
             </div>
             
-            <div id="vktToggleWrapper" class="hidden md:flex items-center gap-2 pr-2">
-                <span class="text-sm font-medium text-gray-500">แก้ไขข้อมูล VKT</span>
-                <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
-                    <input type="checkbox" id="toggleAgent" onclick="toggleAgentBox()" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer"/>
-                    <label for="toggleAgent" class="toggle-label block overflow-hidden h-5 rounded-full bg-gray-300 cursor-pointer"></label>
+            <div id="vktToggleWrapper" class="flex items-center gap-2.5 py-2 sm:py-0">
+                <span class="text-xs font-semibold text-slate-600">แก้ไขข้อมูลตัวแทน (VKT)</span>
+                <div class="relative inline-block w-10 align-middle select-none transition duration-200 ease-in">
+                    <input type="checkbox" id="toggleAgent" onclick="toggleAgentBox()" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 border-slate-300 appearance-none cursor-pointer transition-all"/>
+                    <label for="toggleAgent" class="toggle-label block overflow-hidden h-5 rounded-full bg-slate-300 cursor-pointer"></label>
                 </div>
             </div>
         </div>
 
-        <!-- หน้าฟอร์ม -->
-        <div id="formSection" class="animate-pop-in">
-            <div id="gridContainer" class="grid grid-cols-1 md:grid-cols-2 gap-6 transition-all duration-300">
+        <div class="p-5 md:p-6">
+            <div id="formSection" class="animate-pop-in space-y-5">
                 
-                <!-- 1. ผู้หัก (ลูกค้า) -->
-                <div class="bg-blue-50/50 p-5 rounded-xl border border-blue-100 border-l-4 border-l-blue-500 relative flex flex-col">
-                    <div class="flex justify-between items-center mb-3">
-                        <h3 class="font-bold text-blue-800 flex items-center gap-2"><span>1.</span> ลูกค้า (ผู้มีหน้าที่หัก)</h3>
-                        <button onclick="openModal('payerModal')" class="text-xs bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 shadow-sm transition-colors">➕ เพิ่มใหม่</button>
-                    </div>
+                <div id="gridContainer" class="grid grid-cols-1 md:grid-cols-2 gap-5 transition-all duration-300">
                     
-                    <div class="relative w-full mb-3">
-                        <input type="text" id="payerName" oninput="filterPayer()" onfocus="filterPayer()" placeholder="พิมพ์ชื่อเพื่อค้นหา หรือกรอกชื่อใหม่..." class="w-full p-2.5 border border-blue-300 rounded-lg text-sm bg-white font-semibold text-blue-900 focus:ring-2 focus:ring-blue-500 focus:outline-none shadow-sm" autocomplete="off">
-                        <div id="payerDropdown" class="absolute z-50 w-full bg-white border border-gray-200 rounded-lg shadow-xl hidden max-h-60 overflow-y-auto mt-1 custom-scrollbar"></div>
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col">
+                        <div class="bg-gradient-to-r from-blue-50 to-indigo-50/50 px-5 py-3 border-b border-blue-100 flex justify-between items-center">
+                            <div class="flex items-center gap-2.5">
+                                <span class="bg-blue-600 text-white w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold shadow-sm">1</span>
+                                <h3 class="font-bold text-blue-950">ลูกค้า (ผู้มีหน้าที่หักภาษี)</h3>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <button onclick="clearCard('payer')" class="text-xs text-slate-500 hover:text-rose-600 hover:bg-rose-50 px-2.5 py-1 rounded-lg transition-colors font-medium">
+                                    ล้างค่า
+                                </button>
+                                <button onclick="openModal('payerModal')" class="text-xs bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg font-semibold shadow-sm transition-colors flex items-center gap-1">
+                                    <span>➕</span> เพิ่มใหม่
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="p-4 space-y-3 flex-grow flex flex-col justify-between">
+                            <div class="relative w-full">
+                                <label class="block text-xs font-semibold text-slate-500 mb-1">ค้นหาหรือระบุชื่อบริษัทลูกค้า</label>
+                                <div class="relative">
+                                    <input type="text" id="payerName" oninput="filterPayer()" onfocus="filterPayer()" placeholder="พิมพ์ชื่อลูกค้าเพื่อค้นหา หรือเว้นว่าง..." class="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-xl text-sm bg-white font-semibold text-slate-800 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all" autocomplete="off">
+                                    <svg class="w-4 h-4 text-slate-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                                </div>
+                                <div id="payerDropdown" class="absolute z-50 w-full bg-white border border-slate-200 rounded-xl shadow-xl hidden max-h-56 overflow-y-auto mt-1 custom-scrollbar"></div>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 mb-1">ที่อยู่ลูกค้า</label>
+                                <textarea id="payerAddress" placeholder="รายละเอียดที่อยู่..." class="w-full p-2 border border-slate-200 rounded-xl text-sm bg-slate-50/50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all" rows="2"></textarea>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 mb-1">เลขประจำตัวผู้เสียภาษีอากร (13 หลัก)</label>
+                                <input type="text" id="payerTaxId" placeholder="01055XXXXXXXX" maxlength="17" class="w-full p-2 border border-slate-200 rounded-xl text-sm font-mono-num bg-slate-50/50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all">
+                            </div>
+                        </div>
                     </div>
 
-                    <textarea id="payerAddress" placeholder="ที่อยู่ลูกค้า" class="w-full mb-3 p-2.5 border border-gray-200 rounded-lg text-sm focus:ring-1 focus:ring-blue-400 focus:outline-none" rows="2"></textarea>
-                    <input type="text" id="payerIdCard" placeholder="เลข ปชช." class="w-full mb-3 p-2.5 border border-gray-200 rounded-lg text-sm focus:ring-1 focus:ring-blue-400 focus:outline-none">
-                    <input type="text" id="payerTaxId" placeholder="เลข ภาษี" class="w-full p-2.5 border border-gray-200 rounded-lg text-sm focus:ring-1 focus:ring-blue-400 focus:outline-none">
+                    <div id="agentBox" class="hidden bg-white rounded-2xl border border-indigo-200 shadow-sm overflow-hidden flex flex-col animate-pop-in">
+                        <div class="bg-gradient-to-r from-indigo-50 to-purple-50 px-5 py-3 border-b border-indigo-100 flex justify-between items-center">
+                            <div class="flex items-center gap-2.5">
+                                <span class="bg-indigo-600 text-white w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold shadow-sm">2</span>
+                                <h3 class="font-bold text-indigo-950">กระทำการแทนโดย (VKT)</h3>
+                            </div>
+                            <span class="text-[11px] bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-md font-semibold">ค่าเริ่มต้น</span>
+                        </div>
+                        <div class="p-4 space-y-3 flex-grow flex flex-col justify-between">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 mb-1">ชื่อตัวแทน</label>
+                                <input type="text" id="agentName" class="w-full p-2 border border-slate-200 rounded-xl text-sm bg-indigo-50/30 font-semibold text-indigo-950 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none" value="VKT & TRANSPORT LIMITED PARTNERSHIP (HEADOFFICE)">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 mb-1">ที่อยู่ตัวแทน</label>
+                                <textarea id="agentAddress" class="w-full p-2 border border-slate-200 rounded-xl text-sm bg-indigo-50/30 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none" rows="2">5/12 Moo 15, Khlong Song, Khlong Luang, Pathum Thani 12120</textarea>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 mb-1">เลขประจำตัวผู้เสียภาษีอากร</label>
+                                <input type="text" id="agentTaxId" class="w-full p-2 border border-slate-200 rounded-xl text-sm font-mono-num bg-indigo-50/30 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none" value="0 1335 54001 05 7">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col">
+                        <div class="bg-gradient-to-r from-emerald-50 to-teal-50/50 px-5 py-3 border-b border-emerald-100 flex justify-between items-center">
+                            <div class="flex items-center gap-2.5">
+                                <span class="bg-emerald-600 text-white w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold shadow-sm">3</span>
+                                <h3 class="font-bold text-emerald-950">ผู้ถูกหักภาษี (คนขับรถ / ลานตู้)</h3>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <button onclick="clearCard('payee')" class="text-xs text-slate-500 hover:text-rose-600 hover:bg-rose-50 px-2.5 py-1 rounded-lg transition-colors font-medium">
+                                    ล้างค่า
+                                </button>
+                                <button onclick="openModal('payeeModal')" class="text-xs bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg font-semibold shadow-sm transition-colors flex items-center gap-1">
+                                    <span>➕</span> เพิ่มใหม่
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="p-4 space-y-3 flex-grow flex flex-col justify-between">
+                            <div class="relative w-full">
+                                <label class="block text-xs font-semibold text-slate-500 mb-1">ค้นหาหรือระบุชื่อผู้ถูกหัก</label>
+                                <div class="relative">
+                                    <input type="text" id="payeeName" oninput="filterPayee()" onfocus="filterPayee()" placeholder="พิมพ์ชื่อคนขับ/ลาน เพื่อค้นหา หรือเว้นว่าง..." class="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-xl text-sm bg-white font-semibold text-slate-800 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none transition-all" autocomplete="off">
+                                    <svg class="w-4 h-4 text-slate-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                                </div>
+                                <div id="payeeDropdown" class="absolute z-50 w-full bg-white border border-slate-200 rounded-xl shadow-xl hidden max-h-56 overflow-y-auto mt-1 custom-scrollbar"></div>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 mb-1">ที่อยู่ผู้ถูกหัก</label>
+                                <textarea id="payeeAddress" placeholder="รายละเอียดที่อยู่..." class="w-full p-2 border border-slate-200 rounded-xl text-sm bg-slate-50/50 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none transition-all" rows="2"></textarea>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 mb-1">เลขประจำตัวผู้เสียภาษีอากร (13 หลัก)</label>
+                                <input type="text" id="payeeTaxId" placeholder="เลขบัตรประชาชน / เลขผู้เสียภาษี" maxlength="17" class="w-full p-2 border border-slate-200 rounded-xl text-sm font-mono-num bg-slate-50/50 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none transition-all">
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- 2. กระทำการแทน (VKT) -->
-                <div id="agentBox" class="hidden bg-purple-50/50 p-5 rounded-xl border border-purple-100 border-l-4 border-l-purple-500 relative flex flex-col animate-pop-in">
-                    <h3 class="font-bold text-purple-800 mb-3 flex items-center gap-2 mt-1.5"><span>2.</span> กระทำการแทน (VKT)</h3>
-                    <div class="h-9 mb-4"></div>
-                    <input type="text" id="agentName" class="w-full mb-3 p-2.5 border border-gray-200 rounded-lg text-sm bg-white font-semibold text-purple-900" value="VKT & TRANSPORT LIMITED PARTNERSHIP">
-                    <textarea id="agentAddress" class="w-full mb-3 p-2.5 border border-gray-200 rounded-lg text-sm bg-white" rows="2">5/12 Moo 15, Khlong Song, Khlong Luang, Pathum Thani 12120</textarea>
-                    <div class="h-9 mb-3"></div>
-                    <input type="text" id="agentTaxId" class="w-full p-2.5 border border-gray-200 rounded-lg text-sm bg-white" value="0 1335 54001 05 7">
-                </div>
-
-                <!-- 3. ผู้ถูกหัก -->
-                <div class="bg-green-50/50 p-5 rounded-xl border border-green-100 border-l-4 border-l-green-500 relative flex flex-col">
-                    <div class="flex justify-between items-center mb-3">
-                        <h3 class="font-bold text-green-800 flex items-center gap-2"><span>3.</span> ผู้ถูกหัก (คนขับรถ/ลาน)</h3>
-                        <button onclick="openModal('payeeModal')" class="text-xs bg-green-600 text-white px-3 py-1.5 rounded-lg hover:bg-green-700 shadow-sm transition-colors">➕ เพิ่มใหม่</button>
+                <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200/90 space-y-4">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-200 pb-2.5">
+                        <div class="flex items-center gap-2">
+                            <span>⚙️</span>
+                            <h3 class="font-bold text-slate-800 text-sm">ตั้งค่าคิวเอกสารและการสั่งพิมพ์</h3>
+                            <span class="hidden sm:inline text-xs text-slate-400">| ระบบคำนวณเล่มที่ (50 ชุด/เล่ม) และรันเลขที่เอกสารให้อัตโนมัติ</span>
+                        </div>
+                        <button onclick="editSequence()" id="currentSeqDisplay" class="text-xs bg-white hover:bg-blue-50 text-blue-600 font-semibold px-3 py-1 rounded-lg border border-slate-200 shadow-sm transition-all flex items-center gap-1.5 cursor-pointer">
+                            กำลังโหลดคิว... ✏️
+                        </button>
                     </div>
 
-                    <div class="relative w-full mb-3">
-                        <input type="text" id="payeeName" oninput="filterPayee()" onfocus="filterPayee()" placeholder="พิมพ์ชื่อเพื่อค้นหา หรือกรอกชื่อใหม่..." class="w-full p-2.5 border border-green-300 rounded-lg text-sm bg-white font-semibold text-green-900 focus:ring-2 focus:ring-green-500 focus:outline-none shadow-sm" autocomplete="off">
-                        <div id="payeeDropdown" class="absolute z-50 w-full bg-white border border-gray-200 rounded-lg shadow-xl hidden max-h-60 overflow-y-auto mt-1 custom-scrollbar"></div>
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-stretch">
+                        
+                        <div class="md:col-span-3 bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">📅 ประจำเดือน / ปี</label>
+                            <input type="month" id="docMonthYear" onchange="fetchCurrentSequence()" class="w-full p-2 border border-slate-200 rounded-lg text-base font-bold text-center text-slate-800 bg-slate-50 hover:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none cursor-pointer transition-all">
+                        </div>
+
+                        <div class="md:col-span-4 bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                            <div class="flex justify-between items-center mb-1.5">
+                                <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">📘 เล่มที่ปัจจุบัน</span>
+                                <span class="text-[11px] text-slate-400">50 ใบ/เล่ม</span>
+                            </div>
+                            <input type="text" id="bookNoDisplay" value="..." class="w-full py-2 px-3 rounded-lg bg-blue-50/70 border border-blue-100 text-blue-700 font-mono-num font-bold text-center text-xl" readonly>
+                        </div>
+
+                        <div class="md:col-span-5 bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                            <div class="flex justify-between items-center mb-1.5">
+                                <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">🏷️ คิวเลขที่เริ่มต้น</span>
+                                <span id="docRangePreview" class="text-[11px] font-mono-num text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded font-semibold"></span>
+                            </div>
+                            <input type="text" id="nextDocNo" value="..." class="w-full py-2 px-3 rounded-lg bg-emerald-50/70 border border-emerald-100 text-emerald-700 font-mono-num font-bold text-center text-xl" readonly>
+                        </div>
                     </div>
 
-                    <textarea id="payeeAddress" placeholder="ที่อยู่" class="w-full mb-3 p-2.5 border border-gray-200 rounded-lg text-sm focus:ring-1 focus:ring-green-400 focus:outline-none" rows="2"></textarea>
-                    <input type="text" id="payeeIdCard" placeholder="เลข ปชช." class="w-full mb-3 p-2.5 border border-gray-200 rounded-lg text-sm focus:ring-1 focus:ring-green-400 focus:outline-none">
-                    <input type="text" id="payeeTaxId" placeholder="เลข ภาษี" class="w-full p-2.5 border border-gray-200 rounded-lg text-sm focus:ring-1 focus:ring-green-400 focus:outline-none">
+                    <div class="bg-white p-4 rounded-xl border-2 border-blue-100 shadow-sm flex flex-col md:flex-row items-center justify-between gap-5">
+                        <div class="w-full md:w-auto flex-grow space-y-2">
+                            <div class="flex flex-wrap items-center justify-between gap-2">
+                                <label class="text-sm font-bold text-slate-700">
+                                    จำนวนชุดที่ต้องการพิมพ์ <span class="text-rose-500">*</span>
+                                </label>
+                                <div class="flex items-center gap-1.5">
+                                    <span class="text-xs text-slate-400 mr-1">เลือกด่วน:</span>
+                                    <button type="button" onclick="setAmount(1)" class="px-2.5 py-1 text-xs font-bold rounded-md bg-slate-100 hover:bg-blue-100 text-slate-700 hover:text-blue-700 transition-colors">1 ชุด</button>
+                                    <button type="button" onclick="setAmount(10)" class="px-2.5 py-1 text-xs font-bold rounded-md bg-slate-100 hover:bg-blue-100 text-slate-700 hover:text-blue-700 transition-colors">10 ชุด</button>
+                                    <button type="button" onclick="setAmount(25)" class="px-2.5 py-1 text-xs font-bold rounded-md bg-slate-100 hover:bg-blue-100 text-slate-700 hover:text-blue-700 transition-colors">25 ชุด</button>
+                                    <button type="button" onclick="setAmount(50)" class="px-2.5 py-1 text-xs font-bold rounded-md bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors">50 ชุด (1 เล่ม)</button>
+                                </div>
+                            </div>
+                            <input type="number" id="printAmount" oninput="updateRangePreview()" value="50" min="1" max="100" class="w-full p-2.5 border border-slate-300 rounded-xl text-2xl font-mono-num font-bold text-center text-blue-900 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all">
+                        </div>
+
+                        <div class="w-full md:w-72 self-stretch flex">
+                            <button onclick="showConfirmModal()" class="w-full bg-gradient-to-r from-slate-900 to-slate-800 hover:from-blue-600 hover:to-indigo-600 text-white font-bold py-3.5 px-6 rounded-xl shadow-lg hover:shadow-blue-500/25 transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-3 text-lg">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                                <span>สร้างไฟล์ PDF</span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- ส่วนควบคุมการพิมพ์ (ปรับเป็น 2x2 Grid) -->
-            <div class="mt-8 bg-gray-50 p-6 rounded-xl border border-gray-200 flex flex-col gap-6 shadow-sm">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    
-                    <!-- แถว 1 -->
+            <div id="historySection" class="hidden animate-pop-in">
+                <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-4">
                     <div>
-                        <label class="block text-sm font-bold text-gray-700 mb-1.5">ประจำเดือน/ปี</label>
-                        <input type="month" id="docMonthYear" onchange="fetchCurrentSequence()" class="w-full p-4 border border-gray-300 rounded-lg text-lg font-bold text-center text-gray-800 focus:ring-2 focus:ring-blue-500 focus:outline-none cursor-pointer">
+                        <h3 class="font-bold text-lg text-slate-800 flex items-center gap-2">
+                            <span>📋</span> ประวัติการสร้างเอกสาร (Audit Log)
+                        </h3>
+                        <p class="text-xs text-slate-500">สามารถกดเปิดดูไฟล์ PDF ย้อนหลัง หรือกดยกเลิกเพื่อถอยคิวเลขที่ได้</p>
                     </div>
-
-                    <div>
-                        <label class="block text-sm font-bold text-gray-700 mb-1.5">เล่มที่</label>
-                        <input type="text" id="bookNoDisplay" value="..." class="w-full p-4 border border-gray-300 rounded-lg bg-gray-200 text-blue-700 font-mono font-bold text-center text-lg shadow-inner" readonly>
-                    </div>
-                    
-                    <!-- แถว 2 -->
-                    <div>
-                        <label class="block text-sm font-bold text-gray-700 mb-1.5 flex justify-between items-center">
-                            <span>คิวเลขที่ต่อไป</span>
-                            <span id="currentSeqDisplay" onclick="editSequence()" class="text-xs text-blue-600 font-medium cursor-pointer hover:underline bg-blue-50 px-2 py-1 rounded border border-blue-100 transition-colors" title="คลิกเพื่อแก้ไขลำดับเลขคิว">กำลังโหลด... ✏️</span>
-                        </label>
-                        <input type="text" id="nextDocNo" value="..." class="w-full p-4 border border-gray-300 rounded-lg bg-white text-green-700 font-mono font-bold text-center text-lg shadow-inner" readonly>
-                    </div>
-
-                    <div class="relative">
-                        <label class="block text-sm font-bold text-gray-700 mb-1.5">จำนวนชุดที่ต้องการ <span class="text-red-500">*</span></label>
-                        <input type="number" id="printAmount" value="25" min="1" max="100" class="w-full p-4 border-2 border-blue-400 rounded-lg text-2xl font-bold text-center text-blue-800 bg-blue-50 focus:ring-4 focus:ring-blue-200 focus:outline-none shadow-inner">
+                    <div class="flex items-center gap-2 w-full sm:w-auto">
+                        <input type="text" id="searchLog" oninput="filterLogs()" placeholder="🔍 ค้นหาเล่มที่, เลขที่, ชื่อ..." class="px-3.5 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none w-full sm:w-64">
+                        <button onclick="fetchLogs()" class="text-sm font-semibold text-blue-600 hover:bg-blue-100 bg-blue-50 px-4 py-2 rounded-xl border border-blue-200 whitespace-nowrap transition-colors">
+                            รีเฟรช 🔄
+                        </button>
                     </div>
                 </div>
-
-                <div class="w-full mt-2">
-                    <button onclick="showConfirmModal()" class="w-full bg-gray-900 hover:bg-black text-white font-bold py-4 px-4 rounded-lg shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-2 text-lg">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
-                        สร้างไฟล์ PDF
-                    </button>
+                
+                <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden overflow-x-auto shadow-sm min-h-[340px]">
+                    <table class="w-full text-sm text-left text-slate-600">
+                        <thead class="text-xs text-slate-700 bg-slate-100 border-b border-slate-200 uppercase">
+                            <tr>
+                                <th class="px-5 py-3.5 w-44">วัน-เวลา</th>
+                                <th class="px-5 py-3.5">รายละเอียดการออกเอกสาร</th>
+                                <th class="px-5 py-3.5 text-center w-32">ผู้ทำรายการ</th>
+                                <th class="px-5 py-3.5 text-center w-36">จัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="logContainer" class="divide-y divide-slate-100">
+                            <tr><td colspan="4" class="px-4 py-12 text-center"><span class="spinner spinner-dark"></span> กำลังโหลดข้อมูล...</td></tr>
+                        </tbody>
+                    </table>
                 </div>
-            </div>
-        </div>
 
-        <!-- หน้าประวัติ -->
-        <div id="historySection" class="hidden animate-pop-in">
-            <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-4">
-                <h3 class="font-bold text-lg text-gray-800 flex items-center gap-2">
-                    <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    ประวัติการสร้างเอกสาร (Audit Log)
-                </h3>
-                <div class="flex items-center gap-2 w-full sm:w-auto">
-                    <input type="text" id="searchLog" oninput="filterLogs()" placeholder="🔍 ค้นหา (เล่มที่, เลขที่, ชื่อ)..." class="p-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none w-full sm:w-64">
-                    <button onclick="fetchLogs()" class="text-sm text-blue-600 hover:bg-blue-100 bg-blue-50 px-3 py-2.5 rounded-lg border border-blue-100 whitespace-nowrap transition-colors">รีเฟรช 🔄</button>
-                </div>
-            </div>
-            
-            <div class="bg-gray-50 rounded-xl border border-gray-200 overflow-hidden overflow-x-auto shadow-sm min-h-[300px]">
-                <table class="w-full text-sm text-left text-gray-600">
-                    <thead class="text-xs text-gray-700 bg-gray-200 border-b">
-                        <tr>
-                            <th class="px-4 py-3 w-40">วัน-เวลา</th>
-                            <th class="px-4 py-3">รายละเอียดการออกเอกสาร</th>
-                            <th class="px-4 py-3 text-center w-32">ผู้ทำรายการ</th>
-                            <th class="px-4 py-3 text-center w-32">จัดการ</th>
-                        </tr>
-                    </thead>
-                    <tbody id="logContainer">
-                        <tr><td colspan="4" class="px-4 py-8 text-center"><span class="spinner spinner-dark"></span> กำลังโหลดข้อมูล...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="flex justify-between items-center mt-4">
-                <span id="pageInfo" class="text-sm text-gray-600 font-medium">หน้า 1 จาก 1</span>
-                <div class="flex gap-2">
-                    <button id="btnPrev" onclick="prevPage()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors">ก่อนหน้า</button>
-                    <button id="btnNext" onclick="nextPage()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors">ถัดไป</button>
+                <div class="flex justify-between items-center mt-4">
+                    <span id="pageInfo" class="text-sm text-slate-600 font-medium">หน้า 1 จาก 1</span>
+                    <div class="flex gap-2">
+                        <button id="btnPrev" onclick="prevPage()" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200 disabled:opacity-40 disabled:cursor-not-allowed font-semibold text-sm transition-colors">ก่อนหน้า</button>
+                        <button id="btnNext" onclick="nextPage()" class="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed font-semibold text-sm transition-colors">ถัดไป</button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Confirm Modal -->
-    <div id="confirmModal" class="fixed inset-0 bg-black/60 z-50 hidden items-center justify-center backdrop-blur-sm transition-opacity">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 animate-pop-in border-t-4 border-blue-600">
-            <h3 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2 flex items-center gap-2">⚠️ ยืนยันข้อมูลก่อนสร้าง PDF</h3>
-            <div class="space-y-3 text-sm text-gray-700 mb-6 bg-gray-50 p-4 rounded-lg border">
-                <p class="flex justify-between border-b pb-1"><span>เริ่มที่เล่ม:</span> <strong id="lblCBook" class="text-blue-700"></strong></p>
-                <p class="flex justify-between border-b pb-1"><span>เริ่มที่เลข:</span> <strong id="lblCNum" class="text-green-700"></strong></p>
-                <p class="flex justify-between border-b pb-1"><span>จำนวนทั้งหมด:</span> <strong id="lblCAmt" class="text-lg text-gray-900"></strong></p>
-                <p class="flex justify-between border-b pb-1"><span>ลูกค้า (ผู้หัก):</span> <strong id="lblCPayer" class="text-right w-2/3 truncate"></strong></p>
-                <p class="flex justify-between"><span>ผู้ถูกหัก:</span> <strong id="lblCPayee" class="text-right w-2/3 truncate"></strong></p>
+    <div id="confirmModal" class="fixed inset-0 bg-slate-900/60 z-50 hidden items-center justify-center backdrop-blur-sm p-4">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md p-6 animate-pop-in border border-slate-100">
+            <div class="flex items-center gap-3 mb-4 pb-3 border-b border-slate-100">
+                <div class="bg-amber-100 text-amber-600 w-10 h-10 rounded-xl flex items-center justify-center text-xl">⚠️</div>
+                <div>
+                    <h3 class="text-lg font-bold text-slate-800">ยืนยันการสร้างไฟล์ PDF</h3>
+                    <p class="text-xs text-slate-500">ตรวจสอบความถูกต้องของคิวก่อนสั่งพิมพ์</p>
+                </div>
+            </div>
+            <div class="space-y-3 text-sm text-slate-700 mb-6 bg-slate-50 p-4 rounded-2xl border border-slate-200/80">
+                <div class="flex justify-between items-center border-b border-slate-200/60 pb-2">
+                    <span class="text-slate-500">เล่มที่เอกสาร:</span>
+                    <strong id="lblCBook" class="text-blue-700 font-mono-num text-base"></strong>
+                </div>
+                <div class="flex justify-between items-center border-b border-slate-200/60 pb-2">
+                    <span class="text-slate-500">ช่วงเลขที่พิมพ์:</span>
+                    <strong id="lblCNum" class="text-emerald-700 font-mono-num text-sm"></strong>
+                </div>
+                <div class="flex justify-between items-center border-b border-slate-200/60 pb-2">
+                    <span class="text-slate-500">จำนวนทั้งหมด:</span>
+                    <strong id="lblCAmt" class="text-base text-slate-900 bg-white px-2.5 py-0.5 rounded-md border"></strong>
+                </div>
+                <div class="flex justify-between items-center border-b border-slate-200/60 pb-2">
+                    <span class="text-slate-500">ลูกค้า (ผู้หัก):</span>
+                    <strong id="lblCPayer" class="text-right w-3/5 truncate text-slate-800"></strong>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-slate-500">ผู้ถูกหัก:</span>
+                    <strong id="lblCPayee" class="text-right w-3/5 truncate text-slate-800"></strong>
+                </div>
             </div>
             <div class="flex gap-3 justify-end">
-                <button onclick="closeModal('confirmModal')" class="px-5 py-2.5 bg-gray-200 text-gray-700 font-bold rounded-lg hover:bg-gray-300 transition-colors">ยกเลิก</button>
-                <button onclick="executeProcessDocument()" id="btnConfirmGenerate" class="px-5 py-2.5 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 shadow flex items-center gap-2 transition-colors">ยืนยันสร้าง PDF</button>
+                <button onclick="closeModal('confirmModal')" class="px-5 py-2.5 bg-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-200 transition-colors">ยกเลิก</button>
+                <button onclick="executeProcessDocument()" id="btnConfirmGenerate" class="px-6 py-2.5 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 shadow-lg shadow-blue-500/30 flex items-center gap-2 transition-all">
+                    <span>🖨️</span> ยืนยันสร้าง PDF
+                </button>
             </div>
         </div>
     </div>
 
-    <!-- Payer Modal -->
-    <div id="payerModal" class="fixed inset-0 bg-black/60 z-50 hidden items-center justify-center backdrop-blur-sm transition-opacity">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 animate-pop-in">
-            <h3 class="text-xl font-bold text-blue-800 mb-4 border-b pb-2">➕ เพิ่มลูกค้าใหม่</h3>
-            <input type="text" id="newPayerName" placeholder="ชื่อลูกค้า" class="w-full mb-3 p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none">
-            <textarea id="newPayerAddress" placeholder="ที่อยู่ลูกค้า" class="w-full mb-3 p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none" rows="2"></textarea>
-            <input type="text" id="newPayerIdCard" placeholder="เลขบัตรประชาชน" class="w-full mb-3 p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none">
-            <input type="text" id="newPayerTaxId" placeholder="เลขผู้เสียภาษีอากร" class="w-full mb-5 p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none">
+    <div id="payerModal" class="fixed inset-0 bg-slate-900/60 z-50 hidden items-center justify-center backdrop-blur-sm p-4">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md p-6 animate-pop-in">
+            <h3 class="text-lg font-bold text-blue-900 mb-4 border-b pb-3 flex items-center gap-2">
+                <span>➕</span> เพิ่มข้อมูลลูกค้าใหม่
+            </h3>
+            <div class="space-y-3 mb-6">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">ชื่อบริษัท / ลูกค้า *</label>
+                    <input type="text" id="newPayerName" placeholder="ระบุชื่อบริษัท..." class="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">ที่อยู่</label>
+                    <textarea id="newPayerAddress" placeholder="ระบุที่อยู่..." class="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm" rows="3"></textarea>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">เลขประจำตัวผู้เสียภาษี (13 หลัก)</label>
+                    <input type="text" id="newPayerTaxId" placeholder="01055XXXXXXXX" class="w-full p-2.5 border border-slate-300 rounded-xl font-mono-num focus:ring-2 focus:ring-blue-500 outline-none text-sm">
+                </div>
+            </div>
             <div class="flex gap-3 justify-end">
-                <button onclick="closeModal('payerModal')" class="px-5 py-2.5 bg-gray-200 text-gray-700 font-bold rounded-lg hover:bg-gray-300 transition-colors">ยกเลิก</button>
-                <button onclick="saveNewPayer()" id="btnSavePayer" class="px-5 py-2.5 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 shadow transition-colors">บันทึกข้อมูล</button>
+                <button onclick="closeModal('payerModal')" class="px-5 py-2.5 bg-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-200 transition-colors text-sm">ยกเลิก</button>
+                <button onclick="saveNewPayer()" id="btnSavePayer" class="px-5 py-2.5 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 shadow-md transition-colors text-sm">บันทึกข้อมูล</button>
             </div>
         </div>
     </div>
 
-    <!-- Payee Modal -->
-    <div id="payeeModal" class="fixed inset-0 bg-black/60 z-50 hidden items-center justify-center backdrop-blur-sm transition-opacity">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 animate-pop-in">
-            <h3 class="text-xl font-bold text-green-800 mb-4 border-b pb-2">➕ เพิ่มคนขับรถ/ลานตู้</h3>
-            <input type="text" id="newPayeeName" placeholder="ชื่อ-นามสกุล/นิติบุคคล" class="w-full mb-3 p-2.5 border rounded-lg focus:ring-2 focus:ring-green-400 outline-none">
-            <textarea id="newPayeeAddress" placeholder="ที่อยู่" class="w-full mb-3 p-2.5 border rounded-lg focus:ring-2 focus:ring-green-400 outline-none" rows="2"></textarea>
-            <input type="text" id="newPayeeIdCard" placeholder="เลขบัตรประชาชน (13 หลัก)" class="w-full mb-3 p-2.5 border rounded-lg focus:ring-2 focus:ring-green-400 outline-none">
-            <input type="text" id="newPayeeTaxId" placeholder="เลขผู้เสียภาษีอากร" class="w-full mb-5 p-2.5 border rounded-lg focus:ring-2 focus:ring-green-400 outline-none">
+    <div id="payeeModal" class="fixed inset-0 bg-slate-900/60 z-50 hidden items-center justify-center backdrop-blur-sm p-4">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md p-6 animate-pop-in">
+            <h3 class="text-lg font-bold text-emerald-900 mb-4 border-b pb-3 flex items-center gap-2">
+                <span>➕</span> เพิ่มคนขับรถ / ลานตู้ใหม่
+            </h3>
+            <div class="space-y-3 mb-6">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">ชื่อ-นามสกุล / นิติบุคคล *</label>
+                    <input type="text" id="newPayeeName" placeholder="ระบุชื่อ..." class="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">ที่อยู่</label>
+                    <textarea id="newPayeeAddress" placeholder="ระบุที่อยู่..." class="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-sm" rows="3"></textarea>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">เลขประจำตัวผู้เสียภาษี (13 หลัก)</label>
+                    <input type="text" id="newPayeeTaxId" placeholder="เลขบัตรประชาชน 13 หลัก" class="w-full p-2.5 border border-slate-300 rounded-xl font-mono-num focus:ring-2 focus:ring-emerald-500 outline-none text-sm">
+                </div>
+            </div>
             <div class="flex gap-3 justify-end">
-                <button onclick="closeModal('payeeModal')" class="px-5 py-2.5 bg-gray-200 text-gray-700 font-bold rounded-lg hover:bg-gray-300 transition-colors">ยกเลิก</button>
-                <button onclick="saveNewPayee()" id="btnSavePayee" class="px-5 py-2.5 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 shadow transition-colors">บันทึกข้อมูล</button>
+                <button onclick="closeModal('payeeModal')" class="px-5 py-2.5 bg-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-200 transition-colors text-sm">ยกเลิก</button>
+                <button onclick="saveNewPayee()" id="btnSavePayee" class="px-5 py-2.5 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 shadow-md transition-colors text-sm">บันทึกข้อมูล</button>
             </div>
         </div>
     </div>
@@ -279,10 +428,11 @@
         const SUPABASE_URL = 'https://ymemvhmoyixpdcimihht.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_zWQkU24vBJMAba7ldFQSEg_IcsE_W3B';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY); 
-        const GAS_URL = 'https://script.google.com/macros/s/AKfycbxCGPmMYTHh5wsnBjG0hVl_eHUB5PDF2u-vE0VnuDMJz8vxWmoRMKvY6ckm9JughQJo/exec';
+        const GAS_URL = 'https://script.google.com/macros/s/AKfycbxxZPD5oH5DaIkF5TL4kEsmNyMpqJvlatXVWzh3WpGkefEeCuu0DAbG8tEX2zoDKSt4/exec';
 
         let payersData = [];
         let payeesData = [];
+        let globalNextSeq = 1;
         
         let allLogs = [];
         let filteredLogs = [];
@@ -290,8 +440,6 @@
         const logsPerPage = 10;
 
         window.onload = () => {
-            document.body.classList.remove('items-center', 'justify-center');
-            
             const today = new Date();
             const yyyy = today.getFullYear();
             const mm = String(today.getMonth() + 1).padStart(2, '0');
@@ -300,7 +448,6 @@
             const user = localStorage.getItem('vktUser');
             if (user) showMain(user);
             else {
-                document.body.classList.add('items-center', 'justify-center');
                 document.getElementById('loginSection').classList.remove('hidden');
             }
         };
@@ -315,6 +462,45 @@
                 document.getElementById('payeeDropdown').classList.add('hidden');
             }
         });
+
+        function formatDocRunning(seqNo, yearTH) {
+            const bIndex = Math.ceil(seqNo / 50);
+            const dIndex = seqNo % 50 === 0 ? 50 : seqNo % 50;
+            const bCode = bIndex * 10;
+            const bookStr = `${yearTH}/${String(bCode).padStart(3, '0')}`;
+            const docStr = `TX${yearTH}${String(bCode).padStart(2, '0')}${String(dIndex).padStart(2, '0')}`;
+            return { bookStr, docStr };
+        }
+
+        function setAmount(val) {
+            document.getElementById('printAmount').value = val;
+            updateRangePreview();
+        }
+
+        function clearCard(type) {
+            if (type === 'payer') {
+                document.getElementById('payerName').value = '';
+                document.getElementById('payerAddress').value = '';
+                document.getElementById('payerTaxId').value = '';
+            } else if (type === 'payee') {
+                document.getElementById('payeeName').value = '';
+                document.getElementById('payeeAddress').value = '';
+                document.getElementById('payeeTaxId').value = '';
+            }
+        }
+
+        function updateRangePreview() {
+            const dates = generateMonthYear();
+            const amt = parseInt(document.getElementById('printAmount').value) || 1;
+            const endFormatted = formatDocRunning(globalNextSeq + amt - 1, dates.yearTH);
+            
+            const previewEl = document.getElementById('docRangePreview');
+            if (amt > 1) {
+                previewEl.innerText = `ถึง ${endFormatted.docStr}`;
+            } else {
+                previewEl.innerText = `พิมพ์ 1 ชุด`;
+            }
+        }
 
         function toggleAgentBox() {
             const isChecked = document.getElementById('toggleAgent').checked;
@@ -337,17 +523,17 @@
             if (tab === 'form') {
                 document.getElementById('formSection').classList.remove('hidden');
                 document.getElementById('historySection').classList.add('hidden');
-                document.getElementById('tab-form').classList.replace('text-gray-500', 'text-blue-600');
+                document.getElementById('tab-form').classList.replace('text-slate-500', 'text-blue-600');
                 document.getElementById('tab-form').classList.replace('border-transparent', 'border-blue-600');
-                document.getElementById('tab-history').classList.replace('text-blue-600', 'text-gray-500');
+                document.getElementById('tab-history').classList.replace('text-blue-600', 'text-slate-500');
                 document.getElementById('tab-history').classList.replace('border-blue-600', 'border-transparent');
                 toggleWrapper.classList.remove('hidden'); 
             } else {
                 document.getElementById('formSection').classList.add('hidden');
                 document.getElementById('historySection').classList.remove('hidden');
-                document.getElementById('tab-history').classList.replace('text-gray-500', 'text-blue-600');
+                document.getElementById('tab-history').classList.replace('text-slate-500', 'text-blue-600');
                 document.getElementById('tab-history').classList.replace('border-transparent', 'border-blue-600');
-                document.getElementById('tab-form').classList.replace('text-blue-600', 'text-gray-500');
+                document.getElementById('tab-form').classList.replace('text-blue-600', 'text-slate-500');
                 document.getElementById('tab-form').classList.replace('border-blue-600', 'border-transparent');
                 toggleWrapper.classList.add('hidden'); 
                 fetchLogs(); 
@@ -388,14 +574,14 @@
             
             if (filtered.length > 0) {
                 dropdown.innerHTML = filtered.map(p => `
-                    <div onclick="selectPayer('${p.id}')" class="p-3 border-b border-gray-100 hover:bg-blue-50 cursor-pointer transition-colors">
-                        <div class="font-bold text-blue-900">${p.payer_name}</div>
-                        <div class="text-xs text-gray-500 truncate mt-0.5">${p.payer_address} | ภาษี: ${p.payer_tax_id || '-'}</div>
+                    <div onclick="selectPayer('${p.id}')" class="p-3 border-b border-slate-100 hover:bg-blue-50 cursor-pointer transition-colors">
+                        <div class="font-bold text-blue-950 text-sm">${p.payer_name}</div>
+                        <div class="text-xs text-slate-500 truncate mt-0.5">${p.payer_address || '-'} | ภาษี: ${p.payer_tax_id || '-'}</div>
                     </div>
                 `).join('');
                 dropdown.classList.remove('hidden');
             } else {
-                dropdown.innerHTML = `<div class="p-3 text-sm text-gray-500 text-center bg-gray-50">ไม่พบข้อมูล (ระบบจะใช้ชื่อนี้เป็นข้อมูลใหม่)</div>`;
+                dropdown.innerHTML = `<div class="p-3 text-xs text-slate-500 text-center bg-slate-50">ไม่พบในฐานข้อมูล (สามารถพิมพ์ใช้ชื่อนี้ได้ทันที)</div>`;
                 dropdown.classList.remove('hidden');
             }
         }
@@ -405,7 +591,6 @@
             if (p) {
                 document.getElementById('payerName').value = p.payer_name || '';
                 document.getElementById('payerAddress').value = p.payer_address || '';
-                document.getElementById('payerIdCard').value = p.payer_id_card || '';
                 document.getElementById('payerTaxId').value = p.payer_tax_id || '';
             }
             document.getElementById('payerDropdown').classList.add('hidden');
@@ -424,14 +609,14 @@
             
             if (filtered.length > 0) {
                 dropdown.innerHTML = filtered.map(p => `
-                    <div onclick="selectPayee('${p.id}')" class="p-3 border-b border-gray-100 hover:bg-green-50 cursor-pointer transition-colors">
-                        <div class="font-bold text-green-900">${p.payee_name}</div>
-                        <div class="text-xs text-gray-500 truncate mt-0.5">${p.payee_address} | ภาษี: ${p.payee_tax_id || '-'}</div>
+                    <div onclick="selectPayee('${p.id}')" class="p-3 border-b border-slate-100 hover:bg-emerald-50 cursor-pointer transition-colors">
+                        <div class="font-bold text-emerald-950 text-sm">${p.payee_name}</div>
+                        <div class="text-xs text-slate-500 truncate mt-0.5">${p.payee_address || '-'} | ภาษี: ${p.payee_tax_id || '-'}</div>
                     </div>
                 `).join('');
                 dropdown.classList.remove('hidden');
             } else {
-                dropdown.innerHTML = `<div class="p-3 text-sm text-gray-500 text-center bg-gray-50">ไม่พบข้อมูล (ระบบจะใช้ชื่อนี้เป็นข้อมูลใหม่)</div>`;
+                dropdown.innerHTML = `<div class="p-3 text-xs text-slate-500 text-center bg-slate-50">ไม่พบในฐานข้อมูล (สามารถพิมพ์ใช้ชื่อนี้ได้ทันที)</div>`;
                 dropdown.classList.remove('hidden');
             }
         }
@@ -441,14 +626,13 @@
             if (p) {
                 document.getElementById('payeeName').value = p.payee_name || '';
                 document.getElementById('payeeAddress').value = p.payee_address || '';
-                document.getElementById('payeeIdCard').value = p.payee_id_card || '';
                 document.getElementById('payeeTaxId').value = p.payee_tax_id || '';
             }
             document.getElementById('payeeDropdown').classList.add('hidden');
         }
 
         async function fetchLogs() {
-            document.getElementById('logContainer').innerHTML = '<tr><td colspan="4" class="px-4 py-8 text-center"><span class="spinner spinner-dark"></span> กำลังโหลดข้อมูล...</td></tr>';
+            document.getElementById('logContainer').innerHTML = '<tr><td colspan="4" class="px-4 py-12 text-center"><span class="spinner spinner-dark"></span> กำลังโหลดข้อมูล...</td></tr>';
             const { data } = await supabaseClient.from('app_logs').select('*').order('created_at', { ascending: false }).limit(1000); 
             if (data) {
                 allLogs = data;
@@ -473,7 +657,7 @@
             const container = document.getElementById('logContainer');
             
             if (filteredLogs.length === 0) {
-                container.innerHTML = '<tr><td colspan="4" class="px-4 py-8 text-center text-gray-500">ไม่พบข้อมูลประวัติ</td></tr>';
+                container.innerHTML = '<tr><td colspan="4" class="px-4 py-12 text-center text-slate-400">ไม่พบข้อมูลประวัติการสร้างเอกสาร</td></tr>';
                 document.getElementById('pageInfo').innerText = `หน้า 1 จาก 1`;
                 document.getElementById('btnPrev').disabled = true;
                 document.getElementById('btnNext').disabled = true;
@@ -499,24 +683,24 @@
 
                 let btnHTML = '';
                 if (isCancelled) {
-                    btnHTML += `<span class="text-xs bg-red-50 text-red-600 px-3 py-1.5 rounded border border-red-200 font-bold whitespace-nowrap">ยกเลิกแล้ว</span>`;
+                    btnHTML += `<span class="text-xs bg-rose-50 text-rose-600 px-3 py-1 rounded-lg border border-rose-200 font-bold whitespace-nowrap">ยกเลิกแล้ว</span>`;
                 } else {
                     if (pdfLink) {
-                        btnHTML += `<button onclick="window.open('${pdfLink}', '_blank')" class="text-xs bg-blue-100 text-blue-700 px-3 py-1.5 rounded hover:bg-blue-200 mr-2 shadow-sm font-bold transition-colors">PDF</button>`;
+                        btnHTML += `<button onclick="window.open('${pdfLink}', '_blank')" class="text-xs bg-blue-50 text-blue-700 border border-blue-200 px-3 py-1.5 rounded-lg hover:bg-blue-600 hover:text-white mr-1.5 font-bold transition-colors">เปิด PDF</button>`;
                     } else {
-                        btnHTML += `<button disabled class="text-xs bg-gray-100 text-gray-400 px-3 py-1.5 rounded mr-2 shadow-sm font-bold cursor-not-allowed">PDF</button>`;
+                        btnHTML += `<button disabled class="text-xs bg-slate-100 text-slate-400 px-3 py-1.5 rounded-lg mr-1.5 font-bold cursor-not-allowed">PDF</button>`;
                     }
-                    btnHTML += `<button onclick="deleteLog('${log.id}')" class="text-xs bg-red-100 text-red-700 px-3 py-1.5 rounded hover:bg-red-200 shadow-sm font-bold transition-colors">ยกเลิก</button>`;
+                    btnHTML += `<button onclick="deleteLog('${log.id}')" class="text-xs bg-rose-50 text-rose-600 border border-rose-200 px-3 py-1.5 rounded-lg hover:bg-rose-600 hover:text-white font-bold transition-colors">ยกเลิก</button>`;
                 }
 
-                const textStyle = isCancelled ? 'text-red-500 line-through opacity-80' : 'text-gray-800 font-medium';
+                const textStyle = isCancelled ? 'text-rose-500 line-through opacity-75' : 'text-slate-800 font-medium';
 
                 return `
-                    <tr class="bg-white border-b hover:bg-gray-50 transition-colors">
-                        <td class="px-4 py-3 whitespace-nowrap">${timeStr}</td>
-                        <td class="px-4 py-3 ${textStyle}">${detailText}</td>
-                        <td class="px-4 py-3 text-center text-gray-500">${log.username}</td>
-                        <td class="px-4 py-3 text-center whitespace-nowrap">${btnHTML}</td>
+                    <tr class="bg-white hover:bg-slate-50/80 transition-colors">
+                        <td class="px-5 py-3.5 whitespace-nowrap font-mono-num text-xs text-slate-500">${timeStr}</td>
+                        <td class="px-5 py-3.5 ${textStyle}">${detailText}</td>
+                        <td class="px-5 py-3.5 text-center"><span class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-full text-xs font-semibold">${log.username}</span></td>
+                        <td class="px-5 py-3.5 text-center whitespace-nowrap">${btnHTML}</td>
                     </tr>
                 `;
             }).join('');
@@ -535,45 +719,50 @@
         async function deleteLog(id) {
             Swal.fire({
                 title: 'ยืนยันการยกเลิกเอกสาร?',
-                text: "ระบบจะบันทึกประวัติว่ามีการยกเลิก และถอยคิวเลขที่กลับให้อัตโนมัติ (Soft Delete)",
+                text: "ระบบจะบันทึกประวัติว่ายกเลิก และถอยคิวเลขที่กลับให้อัตโนมัติ",
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#9ca3af',
-                confirmButtonText: 'ยกเลิกเอกสาร',
+                confirmButtonColor: '#e11d48',
+                cancelButtonColor: '#94a3b8',
+                confirmButtonText: 'ยืนยันยกเลิก',
                 cancelButtonText: 'ปิดหน้าต่าง'
             }).then(async (result) => {
                 if (result.isConfirmed) {
                     Swal.fire({ title: 'กำลังบันทึกการยกเลิก...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
                     
                     const currentUser = localStorage.getItem('vktUser') || 'Unknown';
-
                     const { data: logData } = await supabaseClient.from('app_logs').select('*').eq('id', id).single();
-                    let targetMMYY = "";
                     let targetDBKey = "";
+                    let searchPattern = "";
 
                     if (logData) {
                         const oldText = logData.action_detail.split('_URL_')[0];
-                        const mmMatch = oldText.match(/เล่มที่ (\d{2}\/\d{2})/);
-                        if (mmMatch && mmMatch[1]) {
-                            targetMMYY = mmMatch[1];
-                            targetDBKey = targetMMYY.replace('/', '');
+                        const periodMatch = oldText.match(/\[งวด (\d{2}\/\d{2})\]/);
+                        const legacyMatch = oldText.match(/เล่มที่ (\d{2}\/\d{2})/);
+
+                        if (periodMatch && periodMatch[1]) {
+                            targetDBKey = periodMatch[1].replace('/', '');
+                            searchPattern = `%[งวด ${periodMatch[1]}]%`;
+                        } else if (legacyMatch && legacyMatch[1]) {
+                            targetDBKey = legacyMatch[1].replace('/', '');
+                            searchPattern = `%เล่มที่ ${legacyMatch[1]}%`;
                         }
 
-                        const newText = `❌ [ยกเลิก] ${oldText.replace('คิวรวมที่', 'เดิมคิวที่')} (ผู้ยกเลิก: ${currentUser})`;
+                        const newText = `❌ [ยกเลิก] ${oldText.replace('คิวรวมที่', 'เดิมคิวที่')} (โดย: ${currentUser})`;
                         await supabaseClient.from('app_logs').update({ action_detail: newText }).eq('id', id);
                     }
                     
-                    if (targetMMYY) {
+                    if (targetDBKey && searchPattern) {
                         const { data: monthLogs } = await supabaseClient
                             .from('app_logs')
                             .select('action_detail')
-                            .like('action_detail', `%เล่มที่ ${targetMMYY}%`)
+                            .like('action_detail', searchPattern)
                             .order('created_at', { ascending: false });
 
                         let newSeq = 0;
                         if (monthLogs && monthLogs.length > 0) {
                             for (let l of monthLogs) {
+                                if (l.action_detail.includes('[ยกเลิก]')) continue;
                                 const match = l.action_detail.match(/คิวรวมที่ \d+-(\d+)/);
                                 if (match && match[1]) {
                                     newSeq = parseInt(match[1]);
@@ -593,30 +782,30 @@
 
         async function saveNewPayer() {
             const btn = document.getElementById('btnSavePayer');
-            const name = document.getElementById('newPayerName').value;
+            const name = document.getElementById('newPayerName').value.trim();
             if(!name) return Swal.fire({icon: 'error', title: 'ข้อมูลไม่ครบ', text: 'กรุณาระบุชื่อลูกค้า'});
             btn.innerHTML = "กำลังบันทึก..."; btn.disabled = true;
-            const insertData = { payer_name: name, payer_address: document.getElementById('newPayerAddress').value, payer_id_card: document.getElementById('newPayerIdCard').value, payer_tax_id: document.getElementById('newPayerTaxId').value };
+            const insertData = { payer_name: name, payer_address: document.getElementById('newPayerAddress').value.trim(), payer_tax_id: document.getElementById('newPayerTaxId').value.trim() };
             const { data, error } = await supabaseClient.from('payers').insert([insertData]).select();
             if(!error && data) { 
                 closeModal('payerModal'); await fetchPayers(); 
-                document.getElementById('payerName').value = data[0].payer_name; autoFillPayerByName(); 
-                Swal.fire({icon: 'success', title: 'บันทึกสำเร็จ', showConfirmButton: false, timer: 1500});
+                selectPayer(data[0].id);
+                Swal.fire({icon: 'success', title: 'บันทึกสำเร็จ', showConfirmButton: false, timer: 1200});
             } else Swal.fire({icon: 'error', title: 'บันทึกไม่สำเร็จ', text: error.message});
             btn.innerHTML = "บันทึกข้อมูล"; btn.disabled = false;
         }
 
         async function saveNewPayee() {
             const btn = document.getElementById('btnSavePayee');
-            const name = document.getElementById('newPayeeName').value;
+            const name = document.getElementById('newPayeeName').value.trim();
             if(!name) return Swal.fire({icon: 'error', title: 'ข้อมูลไม่ครบ', text: 'กรุณาระบุชื่อคนขับ/ลาน'});
             btn.innerHTML = "กำลังบันทึก..."; btn.disabled = true;
-            const insertData = { payee_name: name, payee_address: document.getElementById('newPayeeAddress').value, payee_id_card: document.getElementById('newPayeeIdCard').value, payee_tax_id: document.getElementById('newPayeeTaxId').value };
+            const insertData = { payee_name: name, payee_address: document.getElementById('newPayeeAddress').value.trim(), payee_tax_id: document.getElementById('newPayeeTaxId').value.trim() };
             const { data, error } = await supabaseClient.from('payees').insert([insertData]).select();
             if(!error && data) { 
                 closeModal('payeeModal'); await fetchPayees(); 
-                document.getElementById('payeeName').value = data[0].payee_name; autoFillPayeeByName();
-                Swal.fire({icon: 'success', title: 'บันทึกสำเร็จ', showConfirmButton: false, timer: 1500});
+                selectPayee(data[0].id);
+                Swal.fire({icon: 'success', title: 'บันทึกสำเร็จ', showConfirmButton: false, timer: 1200});
             } else Swal.fire({icon: 'error', title: 'บันทึกไม่สำเร็จ', text: error.message});
             btn.innerHTML = "บันทึกข้อมูล"; btn.disabled = false;
         }
@@ -636,7 +825,7 @@
             }
             
             const yearTH = String(year + 543).slice(-2); 
-            return { dbKey: `${month}${yearTH}`, mmYY: `${month}/${yearTH}` };
+            return { dbKey: `${month}${yearTH}`, mmYY: `${month}/${yearTH}`, yearTH: yearTH };
         }
 
         async function fetchCurrentSequence() {
@@ -646,32 +835,32 @@
                 let nextSeq = 1;
                 if (data) {
                     nextSeq = data.current_sequence + 1;
-                    document.getElementById('currentSeqDisplay').innerHTML = `(พิมพ์ล่าสุดรวมถึงคิวที่ ${data.current_sequence}) ✏️`;
+                    document.getElementById('currentSeqDisplay').innerHTML = `พิมพ์ล่าสุดถึงคิวที่ <strong>${data.current_sequence}</strong> &nbsp;✏️ แก้ไขคิว`;
                 } else {
                     const { error: insertErr } = await supabaseClient.from('document_sequence').insert([{ book_number: dates.dbKey, current_sequence: 0 }]);
-                    if(!insertErr) document.getElementById('currentSeqDisplay').innerHTML = `(เริ่มเดือนใหม่) ✏️`;
+                    if(!insertErr) document.getElementById('currentSeqDisplay').innerHTML = `เริ่มเดือนใหม่ (คิวที่ 0) &nbsp;✏️ แก้ไขคิว`;
                 }
                 
-                let bIndex = Math.ceil(nextSeq / 50);
-                let dIndex = nextSeq % 50 === 0 ? 50 : nextSeq % 50;
+                globalNextSeq = nextSeq;
+                const formatted = formatDocRunning(nextSeq, dates.yearTH);
+                document.getElementById('bookNoDisplay').value = formatted.bookStr;
+                document.getElementById('nextDocNo').value = formatted.docStr;
+                updateRangePreview();
                 
-                document.getElementById('bookNoDisplay').value = `${dates.mmYY}/${String(bIndex).padStart(2, '0')}`;
-                document.getElementById('nextDocNo').value = `${String(dIndex).padStart(2, '0')}/${dates.mmYY}`;
-                
-            } catch (error) { document.getElementById('currentSeqDisplay').innerText = "(ดึงเลขล้มเหลว)"; }
+            } catch (error) { document.getElementById('currentSeqDisplay').innerText = "ดึงเลขคิวล้มเหลว"; }
         }
 
         async function editSequence() {
             const dates = generateMonthYear();
             const { value: newSeq } = await Swal.fire({
-                title: `แก้ไขคิวเลขที่รวมของเดือน ${dates.mmYY}`,
+                title: `แก้ไขคิวล่าสุด (งวด ${dates.mmYY})`,
                 input: 'number',
-                inputLabel: 'ระบุเลขคิวรวมล่าสุดที่พิมพ์ไปแล้ว',
-                inputPlaceholder: 'ใส่ตัวเลขคิวรวม...',
+                inputLabel: 'ระบุเลขคิวรวมล่าสุดที่พิมพ์ไปแล้ว (ใส่ 0 เพื่อเริ่มนับ 1 ใหม่)',
+                inputValue: globalNextSeq - 1,
                 showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#9ca3af',
-                confirmButtonText: 'บันทึก',
+                confirmButtonColor: '#2563eb',
+                cancelButtonColor: '#94a3b8',
+                confirmButtonText: 'บันทึกคิว',
                 cancelButtonText: 'ยกเลิก'
             });
 
@@ -679,18 +868,18 @@
                 const { error } = await supabaseClient.from('document_sequence').update({ current_sequence: parseInt(newSeq) }).eq('book_number', dates.dbKey);
                 if (!error) {
                     fetchCurrentSequence();
-                    Swal.fire({icon: 'success', title: 'อัปเดตคิวเลขที่เรียบร้อย!', showConfirmButton: false, timer: 1500});
+                    Swal.fire({icon: 'success', title: 'อัปเดตคิวเรียบร้อย!', showConfirmButton: false, timer: 1200});
                 } else Swal.fire('เกิดข้อผิดพลาด', error.message, 'error');
             }
         }
 
         async function handleLogin() {
-            const u = document.getElementById('loginUsername').value;
-            const p = document.getElementById('loginPassword').value;
+            const u = document.getElementById('loginUsername').value.trim();
+            const p = document.getElementById('loginPassword').value.trim();
             const btn = document.getElementById('loginBtn');
             const err = document.getElementById('loginError');
             if(!u || !p) return;
-            btn.disabled = true; btn.innerHTML = `<span class="spinner"></span> ตรวจสอบ...`; err.classList.add('hidden');
+            btn.disabled = true; btn.innerHTML = `<span class="spinner"></span> กำลังตรวจสอบ...`; err.classList.add('hidden');
             try {
                 const { data } = await supabaseClient.from('simple_users').select('*').eq('username', u).eq('password', p).single();
                 if (data) { 
@@ -702,7 +891,6 @@
         }
 
         function showMain(username) {
-            document.body.classList.remove('items-center', 'justify-center');
             document.getElementById('loginSection').classList.add('hidden');
             document.getElementById('mainSection').classList.remove('hidden');
             document.getElementById('currentUser').innerText = `👤 ${username}`;
@@ -714,14 +902,13 @@
                 title: 'ต้องการออกจากระบบ?',
                 icon: 'question',
                 showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#9ca3af',
+                confirmButtonColor: '#e11d48',
+                cancelButtonColor: '#94a3b8',
                 confirmButtonText: 'ออกจากระบบ',
                 cancelButtonText: 'ยกเลิก'
             }).then((result) => {
                 if (result.isConfirmed) {
                     localStorage.removeItem('vktUser');
-                    document.body.classList.add('items-center', 'justify-center');
                     document.getElementById('loginSection').classList.remove('hidden');
                     document.getElementById('mainSection').classList.add('hidden');
                     document.getElementById('loginUsername').value = ''; document.getElementById('loginPassword').value = '';
@@ -733,14 +920,23 @@
             const amount = parseInt(document.getElementById('printAmount').value);
             if(!amount || amount < 1) return Swal.fire({icon: 'warning', title: 'ข้อมูลไม่ครบ', text: 'กรุณาระบุจำนวนชุดที่ต้องการพิมพ์'});
             
-            const bookNo = document.getElementById('bookNoDisplay').value;
-            const nextDocNo = document.getElementById('nextDocNo').value;
+            const dates = generateMonthYear();
+            const startFormatted = formatDocRunning(globalNextSeq, dates.yearTH);
+            const endFormatted = formatDocRunning(globalNextSeq + amount - 1, dates.yearTH);
 
-            document.getElementById('lblCBook').innerText = `${bookNo} (ระบบปัดเล่มให้อัตโนมัติ)`;
-            document.getElementById('lblCNum').innerText = `${nextDocNo}`;
+            const bookRange = startFormatted.bookStr === endFormatted.bookStr 
+                ? startFormatted.bookStr 
+                : `${startFormatted.bookStr} ถึง ${endFormatted.bookStr}`;
+
+            const docRange = amount === 1 
+                ? startFormatted.docStr 
+                : `${startFormatted.docStr} ถึง ${endFormatted.docStr}`;
+
+            document.getElementById('lblCBook').innerText = bookRange;
+            document.getElementById('lblCNum').innerText = docRange;
             document.getElementById('lblCAmt').innerText = `${amount} ชุด`;
-            document.getElementById('lblCPayer').innerText = document.getElementById('payerName').value || "(เว้นว่าง)";
-            document.getElementById('lblCPayee').innerText = document.getElementById('payeeName').value || "(เว้นว่าง)";
+            document.getElementById('lblCPayer').innerText = document.getElementById('payerName').value || "(เว้นว่างสำหรับเขียนมือ)";
+            document.getElementById('lblCPayee').innerText = document.getElementById('payeeName').value || "(เว้นว่างสำหรับเขียนมือ)";
 
             openModal('confirmModal');
         }
@@ -753,8 +949,8 @@
             const currentUser = localStorage.getItem('vktUser');
 
             Swal.fire({
-                title: 'กำลังประมวลผล PDF...',
-                html: 'กรุณารอสักครู่ ระบบกำลังจัดหน้ากระดาษและส่งมอบให้ Google Apps Script',
+                title: 'กำลังสร้างไฟล์ PDF...',
+                html: 'กรุณารอสักครู่ ระบบกำลังจัดหน้ากระดาษสำหรับเครื่องพิมพ์ Dot Matrix',
                 allowOutsideClick: false,
                 didOpen: () => { Swal.showLoading(); }
             });
@@ -773,14 +969,12 @@
                     endNo: endNo,
                     payerName: document.getElementById('payerName').value || "",
                     payerAddress: document.getElementById('payerAddress').value || "",
-                    payerIdCard: document.getElementById('payerIdCard').value || "",
                     payerTaxId: document.getElementById('payerTaxId').value || "",
                     agentName: document.getElementById('agentName').value,
                     agentAddress: document.getElementById('agentAddress').value,
                     agentTaxId: document.getElementById('agentTaxId').value,
                     payeeName: document.getElementById('payeeName').value || "",
                     payeeAddress: document.getElementById('payeeAddress').value || "",
-                    payeeIdCard: document.getElementById('payeeIdCard').value || "",
                     payeeTaxId: document.getElementById('payeeTaxId').value || "" 
                 };
 
@@ -790,18 +984,11 @@
                 if (result.success) {
                     await supabaseClient.from('document_sequence').update({ current_sequence: endNo, updated_at: new Date().toISOString() }).eq('book_number', currentBookNo);
                     
-                    let startBIndex = Math.ceil(startNo / 50);
-                    let startDIndex = startNo % 50 === 0 ? 50 : startNo % 50;
-                    let endBIndex = Math.ceil(endNo / 50);
-                    let endDIndex = endNo % 50 === 0 ? 50 : endNo % 50;
+                    const startFormatted = formatDocRunning(startNo, dates.yearTH);
+                    const endFormatted = formatDocRunning(endNo, dates.yearTH);
 
-                    let startBookStr = `${dates.mmYY}/${String(startBIndex).padStart(2, '0')}`;
-                    let endBookStr = `${dates.mmYY}/${String(endBIndex).padStart(2, '0')}`;
-                    let startDocStr = `${String(startDIndex).padStart(2, '0')}/${dates.mmYY}`;
-                    let endDocStr = `${String(endDIndex).padStart(2, '0')}/${dates.mmYY}`;
-
-                    let bookDisplay = startBookStr === endBookStr ? startBookStr : `${startBookStr} ถึง ${endBookStr}`;
-                    let logDetail = `เล่มที่ ${bookDisplay} | เลขที่ ${startDocStr} ถึง ${endDocStr} (คิวรวมที่ ${startNo}-${endNo}) ลูกค้า: ${payload.payerName || '(เว้นว่าง)'}`;
+                    let bookDisplay = startFormatted.bookStr === endFormatted.bookStr ? startFormatted.bookStr : `${startFormatted.bookStr} ถึง ${endFormatted.bookStr}`;
+                    let logDetail = `[งวด ${dates.mmYY}] เล่มที่ ${bookDisplay} | เลขที่ ${startFormatted.docStr} ถึง ${endFormatted.docStr} (คิวรวมที่ ${startNo}-${endNo}) ลูกค้า: ${payload.payerName || '(เว้นว่าง)'}`;
 
                     await supabaseClient.from('app_logs').insert([{ 
                         username: currentUser, 
@@ -810,17 +997,16 @@
 
                     fetchCurrentSequence(); fetchLogs();
 
-                    // --- เคลียร์ฟอร์มหลังสร้างเสร็จ ---
-                    ['payerName', 'payerAddress', 'payerIdCard', 'payerTaxId', 'payeeName', 'payeeAddress', 'payeeIdCard', 'payeeTaxId'].forEach(id => document.getElementById(id).value = '');
-                    document.getElementById('printAmount').value = 50;
-                    // ----------------------------------
+                    clearCard('payer');
+                    clearCard('payee');
+                    setAmount(50);
 
                     Swal.fire({
                         icon: 'success',
                         title: 'สร้างเอกสารสำเร็จ!',
-                        text: `ระบบสร้าง PDF ครบ ${amount} ชุดเรียบร้อยแล้ว`,
-                        confirmButtonText: 'เปิดดู PDF',
-                        confirmButtonColor: '#16a34a'
+                        text: `สร้างไฟล์ PDF จำนวน ${amount} ชุดเรียบร้อยแล้ว`,
+                        confirmButtonText: '🖨️ เปิดดูไฟล์ PDF',
+                        confirmButtonColor: '#10b981'
                     }).then((res) => {
                         if (res.isConfirmed) window.open(result.url, '_blank');
                     });
